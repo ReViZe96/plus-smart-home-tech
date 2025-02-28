@@ -23,7 +23,6 @@ public class CollectorServiceImpl implements CollectorService {
 
     private final SensorAvroMapper sensorMapper;
     private final HubAvroMapper hubMapper;
-    private final Producer<String, SpecificRecordBase> producer = initKafkaClient();
 
 
     @Override
@@ -66,7 +65,9 @@ public class CollectorServiceImpl implements CollectorService {
         }
 
         ProducerRecord<String, SpecificRecordBase> producerSensorRecord = new ProducerRecord<>(TelemetryTopics.TELEMETRY_SENSORS_V1, sensorEvent);
+        Producer<String, SpecificRecordBase> producer = initKafkaProducer();
         producer.send(producerSensorRecord);
+        producer.close();
 
     }
 
@@ -104,12 +105,14 @@ public class CollectorServiceImpl implements CollectorService {
         }
 
         ProducerRecord<String, SpecificRecordBase> producerHubRecord = new ProducerRecord<>(TelemetryTopics.TELEMETRY_HUBS_V1, hubEvent);
+        Producer<String, SpecificRecordBase> producer = initKafkaProducer();
         producer.send(producerHubRecord);
+        producer.close();
 
     }
 
 
-    private Producer<String, SpecificRecordBase> initKafkaClient() {
+    private Producer<String, SpecificRecordBase> initKafkaProducer() {
         Properties kafkaConfigs = new Properties();
         kafkaConfigs.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         kafkaConfigs.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
