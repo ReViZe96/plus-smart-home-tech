@@ -58,7 +58,7 @@ protocol HubEventProtocol {
     record DeviceActionAvro {
         string sensor_id;
         ActionTypeAvro type;
-        int valuel;
+        int value;
     }
 
     //Событие добавления сценария
