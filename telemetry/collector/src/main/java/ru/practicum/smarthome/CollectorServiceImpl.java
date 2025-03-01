@@ -72,6 +72,7 @@ public class CollectorServiceImpl implements CollectorService {
                 sensorEvent);
         Producer<String, SpecificRecordBase> producer = initKafkaProducer();
         producer.send(producerSensorRecord);
+        producer.flush();
         producer.close();
 
     }
@@ -117,6 +118,7 @@ public class CollectorServiceImpl implements CollectorService {
                 hubEvent);
         Producer<String, SpecificRecordBase> producer = initKafkaProducer();
         producer.send(producerHubRecord);
+        producer.flush();
         producer.close();
 
     }
