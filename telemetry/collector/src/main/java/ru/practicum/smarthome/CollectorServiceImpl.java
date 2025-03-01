@@ -64,7 +64,12 @@ public class CollectorServiceImpl implements CollectorService {
                 throw new ValidationException("Указан неверный тип события, связанного с датчиком: " + event.getType());
         }
 
-        ProducerRecord<String, SpecificRecordBase> producerSensorRecord = new ProducerRecord<>(TelemetryTopics.TELEMETRY_SENSORS_V1, sensorEvent);
+        ProducerRecord<String, SpecificRecordBase> producerSensorRecord = new ProducerRecord<>(
+                TelemetryTopics.TELEMETRY_SENSORS_V1,
+                null,
+                System.currentTimeMillis(),
+                sensorEvent.getId(),
+                sensorEvent);
         Producer<String, SpecificRecordBase> producer = initKafkaProducer();
         producer.send(producerSensorRecord);
         producer.close();
@@ -104,7 +109,12 @@ public class CollectorServiceImpl implements CollectorService {
                 throw new ValidationException("Указан неверный тип события, связанного с хабом: " + event.getType());
         }
 
-        ProducerRecord<String, SpecificRecordBase> producerHubRecord = new ProducerRecord<>(TelemetryTopics.TELEMETRY_HUBS_V1, hubEvent);
+        ProducerRecord<String, SpecificRecordBase> producerHubRecord = new ProducerRecord<>(
+                TelemetryTopics.TELEMETRY_HUBS_V1,
+                null,
+                System.currentTimeMillis(),
+                hubEvent.getHubId(),
+                hubEvent);
         Producer<String, SpecificRecordBase> producer = initKafkaProducer();
         producer.send(producerHubRecord);
         producer.close();
