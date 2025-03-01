@@ -24,6 +24,8 @@ public class CollectorServiceImpl implements CollectorService {
     private final SensorAvroMapper sensorMapper;
     private final HubAvroMapper hubMapper;
 
+    private final Producer<String, SpecificRecordBase> producer = initKafkaProducer();
+
 
     @Override
     public void collectSensorEvent(SensorEvent event) {
@@ -70,10 +72,7 @@ public class CollectorServiceImpl implements CollectorService {
                 System.currentTimeMillis(),
                 event.getType().name(),
                 sensorEvent);
-        Producer<String, SpecificRecordBase> producer = initKafkaProducer();
         producer.send(producerSensorRecord);
-        producer.flush();
-        producer.close();
 
     }
 
@@ -116,19 +115,18 @@ public class CollectorServiceImpl implements CollectorService {
                 System.currentTimeMillis(),
                 event.getType().name(),
                 hubEvent);
-        Producer<String, SpecificRecordBase> producer = initKafkaProducer();
         producer.send(producerHubRecord);
-        producer.flush();
-        producer.close();
 
     }
 
 
     private Producer<String, SpecificRecordBase> initKafkaProducer() {
         Properties kafkaConfigs = new Properties();
+        kafkaConfigs.put(ProducerConfig.CLIENT_ID_CONFIG, "collector-producer");
         kafkaConfigs.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         kafkaConfigs.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
         kafkaConfigs.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "ru.practicum.smarthome.TelemetrySerializer");
+        kafkaConfigs.put(ProducerConfig.LINGER_MS_CONFIG, 10000);
         return new KafkaProducer<>(kafkaConfigs);
 
     }
