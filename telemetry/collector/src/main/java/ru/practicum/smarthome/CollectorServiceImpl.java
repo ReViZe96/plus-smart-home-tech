@@ -68,7 +68,7 @@ public class CollectorServiceImpl implements CollectorService {
                 TelemetryTopics.TELEMETRY_SENSORS_V1,
                 null,
                 System.currentTimeMillis(),
-                sensorEvent.getId(),
+                event.getType().name(),
                 sensorEvent);
         Producer<String, SpecificRecordBase> producer = initKafkaProducer();
         producer.send(producerSensorRecord);
@@ -113,7 +113,7 @@ public class CollectorServiceImpl implements CollectorService {
                 TelemetryTopics.TELEMETRY_HUBS_V1,
                 null,
                 System.currentTimeMillis(),
-                hubEvent.getHubId(),
+                event.getType().name(),
                 hubEvent);
         Producer<String, SpecificRecordBase> producer = initKafkaProducer();
         producer.send(producerHubRecord);
