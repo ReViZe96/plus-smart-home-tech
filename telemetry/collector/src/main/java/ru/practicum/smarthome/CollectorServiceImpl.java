@@ -126,7 +126,9 @@ public class CollectorServiceImpl implements CollectorService {
         kafkaConfigs.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         kafkaConfigs.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
         kafkaConfigs.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "ru.practicum.smarthome.TelemetrySerializer");
-        kafkaConfigs.put(ProducerConfig.LINGER_MS_CONFIG, 10000);
+        kafkaConfigs.put("max.partition.fetch.bytes", "250");
+        kafkaConfigs.put("enable.auto.commit", "false");
+        kafkaConfigs.put("auto.offset.reset", "earliest");
         return new KafkaProducer<>(kafkaConfigs);
 
     }
