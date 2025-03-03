@@ -2,10 +2,7 @@ package ru.practicum.smarthome;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.avro.specific.SpecificRecordBase;
-import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.clients.producer.Producer;
-import org.apache.kafka.clients.producer.ProducerConfig;
-import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.*;
 import org.springframework.stereotype.Service;
 import ru.practicum.smarthome.dto.hub.*;
 import ru.practicum.smarthome.dto.sensor.*;
@@ -15,6 +12,8 @@ import ru.yandex.practicum.kafka.telemetry.event.*;
 
 import javax.validation.ValidationException;
 import java.util.Properties;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 
 @Service
@@ -115,8 +114,12 @@ public class CollectorServiceImpl implements CollectorService {
                 System.currentTimeMillis(),
                 event.getType().name(),
                 hubEvent);
-        producer.send(producerHubRecord);
-
+        Future<RecordMetadata> message = producer.send(producerHubRecord);
+        try {
+            message.get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException("Ошибка во время отправки сообщения в Kafka");
+        }
     }
 
 
@@ -126,9 +129,7 @@ public class CollectorServiceImpl implements CollectorService {
         kafkaConfigs.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         kafkaConfigs.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
         kafkaConfigs.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "ru.practicum.smarthome.TelemetrySerializer");
-        kafkaConfigs.put("max.partition.fetch.bytes", "250");
-        kafkaConfigs.put("enable.auto.commit", "false");
-        kafkaConfigs.put("auto.offset.reset", "earliest");
+        kafkaConfigs.put(ProducerConfig.LINGER_MS_CONFIG, 10000);
         return new KafkaProducer<>(kafkaConfigs);
 
     }
