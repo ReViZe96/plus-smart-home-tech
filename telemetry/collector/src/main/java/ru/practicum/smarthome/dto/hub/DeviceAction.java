@@ -12,6 +12,6 @@ public class DeviceAction {
 
     private String sensorId;
     private ActionTypeAvro type;
-    int value;
+    private int value;
 
 }

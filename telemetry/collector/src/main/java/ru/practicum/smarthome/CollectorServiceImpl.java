@@ -36,7 +36,7 @@ public class CollectorServiceImpl implements CollectorService {
                 .build();
 
         switch (event.getType()) {
-            case CLIMAT_SENSOR_EVENT:
+            case CLIMATE_SENSOR_EVENT:
                 ClimatSensorEvent climatEvent = (ClimatSensorEvent) event;
                 ClimateSensorAvro climatAvro = sensorMapper.climatSensorToAvro(climatEvent);
                 sensorEvent.setPayload(climatAvro);

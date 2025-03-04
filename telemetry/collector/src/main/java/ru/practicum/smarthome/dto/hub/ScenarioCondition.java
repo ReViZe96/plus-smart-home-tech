@@ -14,6 +14,6 @@ public class ScenarioCondition {
     private String sensorId;
     private ConditionTypeAvro type;
     private ConditionOperationAvro operation;
-    private Boolean value;
+    private int value;
 
 }
