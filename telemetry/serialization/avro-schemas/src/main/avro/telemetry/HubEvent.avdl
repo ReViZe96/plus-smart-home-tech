@@ -51,14 +51,14 @@ protocol HubEventProtocol {
         string sensor_id;
         ConditionTypeAvro type;
         ConditionOperationAvro operation;
-        union {null, int, boolean} value;
+        union {null, int, boolean} value = null;
     }
 
     //Действия, выполняемые устройством в рамках сценария
     record DeviceActionAvro {
         string sensor_id;
         ActionTypeAvro type;
-        int value;
+        int? value = null;
     }
 
     //Событие добавления сценария
