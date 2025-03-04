@@ -71,8 +71,12 @@ public class CollectorServiceImpl implements CollectorService {
                 System.currentTimeMillis(),
                 event.getType().name(),
                 sensorEvent);
-        producer.send(producerSensorRecord);
-
+        Future<RecordMetadata> message = producer.send(producerSensorRecord);
+        try {
+            message.get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException("Ошибка во время отправки сообщения в Kafka");
+        }
     }
 
     @Override
