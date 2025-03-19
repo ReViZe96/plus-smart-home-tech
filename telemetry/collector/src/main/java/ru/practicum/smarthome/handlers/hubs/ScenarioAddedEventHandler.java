@@ -1,13 +1,22 @@
 package ru.practicum.smarthome.handlers.hubs;
 
 import org.springframework.stereotype.Component;
+import ru.practicum.smarthome.mapper.HubAvroMapper;
 import ru.yandex.practicum.grpc.telemetry.event.HubEventProto;
 import ru.yandex.practicum.grpc.telemetry.event.ScenarioAddedEventProto;
+import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
+import ru.yandex.practicum.kafka.telemetry.event.ScenarioAddedEventAvro;
+
+import java.time.Instant;
 
 import static ru.practicum.smarthome.TelemetryTopics.TELEMETRY_HUBS_V1;
 
 @Component
 public class ScenarioAddedEventHandler extends HubEventHandler {
+
+    public ScenarioAddedEventHandler(HubAvroMapper hubAvroMapper) {
+        super(hubAvroMapper);
+    }
 
     @Override
     public HubEventProto.PayloadCase getMessageType() {
@@ -16,8 +25,14 @@ public class ScenarioAddedEventHandler extends HubEventHandler {
 
     @Override
     public void handle(HubEventProto event) {
-        ScenarioAddedEventProto scenarioAddedEvent = event.getScenarioAdded();
-        sendToKafka(TELEMETRY_HUBS_V1, getMessageType().name(), scenarioAddedEvent.toByteArray());
+        ScenarioAddedEventProto scenarioAddedEventProto = event.getScenarioAdded();
+        ScenarioAddedEventAvro scenarioAddedEventAvro = hubAvroMapper.scenarioAddedToAvro(scenarioAddedEventProto);
+        HubEventAvro eventAvro = HubEventAvro.newBuilder()
+                .setHubId(event.getHubId())
+                .setTimestamp(Instant.ofEpochSecond(event.getTimestampOrBuilder().getSeconds()))
+                .setPayload(scenarioAddedEventAvro)
+                .build();
+        sendToKafka(TELEMETRY_HUBS_V1, getMessageType().name(), eventAvro);
     }
 
 }

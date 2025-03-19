@@ -1,13 +1,22 @@
 package ru.practicum.smarthome.handlers.sensors;
 
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
+import ru.practicum.smarthome.mapper.SensorAvroMapper;
 import ru.yandex.practicum.grpc.telemetry.event.LightSensorProto;
 import ru.yandex.practicum.grpc.telemetry.event.SensorEventProto;
+import ru.yandex.practicum.kafka.telemetry.event.LightSensorAvro;
+import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
+
+import java.time.Instant;
 
 import static ru.practicum.smarthome.TelemetryTopics.TELEMETRY_SENSORS_V1;
 
-@Service
+@Component
 public class LightSensorHandler extends SensorEventHandler {
+
+    public LightSensorHandler(SensorAvroMapper sensorAvroMapper) {
+        super(sensorAvroMapper);
+    }
 
     @Override
     public SensorEventProto.PayloadCase getMessageType() {
@@ -16,8 +25,15 @@ public class LightSensorHandler extends SensorEventHandler {
 
     @Override
     public void handle(SensorEventProto event) {
-        LightSensorProto lightSensor = event.getLightSensorEvent();
-        sendToKafka(TELEMETRY_SENSORS_V1, getMessageType().name(), lightSensor.toByteArray());
+        LightSensorProto lightSensorProto = event.getLightSensorEvent();
+        LightSensorAvro lightSensorAvro = sensorAvroMapper.lightSensorToAvro(lightSensorProto);
+        SensorEventAvro eventAvro = SensorEventAvro.newBuilder()
+                .setId(event.getId())
+                .setHubId(event.getHubId())
+                .setTimestamp(Instant.ofEpochSecond(event.getTimestampOrBuilder().getSeconds()))
+                .setPayload(lightSensorAvro)
+                .build();
+        sendToKafka(TELEMETRY_SENSORS_V1, getMessageType().name(), eventAvro);
     }
 
 }
