@@ -23,7 +23,7 @@ enum ConditionTypeProto {
     LUMINOSITY = 1;
     SWITCH = 2;
     TEMPERATURE = 3;
-    CO2LEVEL =4;
+    CO2LEVEL = 4;
     HUMIDITY = 5;
 }
 
@@ -59,8 +59,9 @@ message ScenarioConditionProto {
     ConditionTypeProto type = 2;
     ConditionOperationProto operation = 3;
     oneof value {
-        int32 int_value = 4;
-        bool bool_value = 5;
+        bool bool_value = 4;
+        int32 int_value = 5;
+
     }
 }
 
