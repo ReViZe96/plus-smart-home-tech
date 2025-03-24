@@ -48,7 +48,7 @@ public class HubAvroMapper {
                 .setSensorId(scenarioCondition.getSensorId())
                 .setType(ConditionTypeAvro.valueOf(scenarioCondition.getType().name()))
                 .setOperation(ConditionOperationAvro.valueOf(scenarioCondition.getOperation().name()))
-                .setValue(scenarioCondition.getIntValue())
+                .setValue(scenarioCondition.hasIntValue() ? scenarioCondition.getIntValue() : scenarioCondition.getBoolValue())
                 .build();
     }
 

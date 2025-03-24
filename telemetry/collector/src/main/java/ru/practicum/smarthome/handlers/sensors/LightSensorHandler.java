@@ -30,7 +30,8 @@ public class LightSensorHandler extends SensorEventHandler {
         SensorEventAvro eventAvro = SensorEventAvro.newBuilder()
                 .setId(event.getId())
                 .setHubId(event.getHubId())
-                .setTimestamp(Instant.ofEpochSecond(event.getTimestampOrBuilder().getSeconds()))
+                .setTimestamp(Instant.ofEpochSecond(event.getTimestampOrBuilder().getSeconds(),
+                        event.getTimestampOrBuilder().getNanos()))
                 .setPayload(lightSensorAvro)
                 .build();
         sendToKafka(TELEMETRY_SENSORS_V1, getMessageType().name(), eventAvro);

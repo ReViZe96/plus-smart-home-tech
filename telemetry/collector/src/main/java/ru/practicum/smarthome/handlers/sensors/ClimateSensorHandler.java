@@ -30,7 +30,8 @@ public class ClimateSensorHandler extends SensorEventHandler {
         SensorEventAvro eventAvro = SensorEventAvro.newBuilder()
                 .setId(event.getId())
                 .setHubId(event.getHubId())
-                .setTimestamp(Instant.ofEpochMilli(event.getTimestampOrBuilder().getSeconds()))
+                .setTimestamp(Instant.ofEpochSecond(event.getTimestampOrBuilder().getSeconds(),
+                        event.getTimestampOrBuilder().getNanos()))
                 .setPayload(climateSensorAvro)
                 .build();
         eventAvro.setPayload(climateSensorAvro);

@@ -27,10 +27,11 @@ public class DeviceAddedEventHandler extends HubEventHandler {
     @Override
     public void handle(HubEventProto event) {
         DeviceAddedEventProto deviceAddedEventProto = event.getDeviceAdded();
-        DeviceAddedEventAvro deviceAddedEventAvro =  hubAvroMapper.deviceAddedToAvro(deviceAddedEventProto);
+        DeviceAddedEventAvro deviceAddedEventAvro = hubAvroMapper.deviceAddedToAvro(deviceAddedEventProto);
         HubEventAvro eventAvro = HubEventAvro.newBuilder()
                 .setHubId(event.getHubId())
-                .setTimestamp(Instant.ofEpochSecond(event.getTimestampOrBuilder().getSeconds()))
+                .setTimestamp(Instant.ofEpochSecond(event.getTimestampOrBuilder().getSeconds(),
+                        event.getTimestampOrBuilder().getNanos()))
                 .setPayload(deviceAddedEventAvro)
                 .build();
         sendToKafka(TELEMETRY_HUBS_V1, getMessageType().name(), eventAvro);

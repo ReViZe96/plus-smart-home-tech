@@ -29,7 +29,8 @@ public class ScenarioAddedEventHandler extends HubEventHandler {
         ScenarioAddedEventAvro scenarioAddedEventAvro = hubAvroMapper.scenarioAddedToAvro(scenarioAddedEventProto);
         HubEventAvro eventAvro = HubEventAvro.newBuilder()
                 .setHubId(event.getHubId())
-                .setTimestamp(Instant.ofEpochSecond(event.getTimestampOrBuilder().getSeconds()))
+                .setTimestamp(Instant.ofEpochSecond(event.getTimestampOrBuilder().getSeconds(),
+                        event.getTimestampOrBuilder().getNanos()))
                 .setPayload(scenarioAddedEventAvro)
                 .build();
         sendToKafka(TELEMETRY_HUBS_V1, getMessageType().name(), eventAvro);
