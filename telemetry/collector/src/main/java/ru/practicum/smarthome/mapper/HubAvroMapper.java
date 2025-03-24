@@ -1,7 +1,7 @@
 package ru.practicum.smarthome.mapper;
 
 import org.springframework.stereotype.Service;
-import ru.practicum.smarthome.dto.hub.*;
+import ru.yandex.practicum.grpc.telemetry.event.*;
 import ru.yandex.practicum.kafka.telemetry.event.*;
 
 import java.util.List;
@@ -9,24 +9,24 @@ import java.util.List;
 @Service
 public class HubAvroMapper {
 
-    public DeviceAddedEventAvro deviceAddedToAvro(DeviceAddedEvent deviceAddedEvent) {
+    public DeviceAddedEventAvro deviceAddedToAvro(DeviceAddedEventProto deviceAddedEvent) {
         return DeviceAddedEventAvro.newBuilder()
                 .setId(deviceAddedEvent.getId())
-                .setType(deviceAddedEvent.getDeviceType())
+                .setType(DeviceTypeAvro.valueOf(deviceAddedEvent.getType().name()))
                 .build();
     }
 
-    public DeviceRemovedEventAvro deviceRemovedToAvro(DeviceRemovedEvent deviceRemovedEvent) {
+    public DeviceRemovedEventAvro deviceRemovedToAvro(DeviceRemovedEventProto deviceRemovedEvent) {
         return DeviceRemovedEventAvro.newBuilder()
                 .setId(deviceRemovedEvent.getId())
                 .build();
     }
 
-    public ScenarioAddedEventAvro scenarioAddedToAvro(ScenarioAddedEvent scenarioAddedEvent) {
-        List<ScenarioConditionAvro> scenarioConditionsAvro = scenarioAddedEvent.getConditions().stream()
+    public ScenarioAddedEventAvro scenarioAddedToAvro(ScenarioAddedEventProto scenarioAddedEvent) {
+        List<ScenarioConditionAvro> scenarioConditionsAvro = scenarioAddedEvent.getConditionList().stream()
                 .map(this::scenarioConditionToAvro)
                 .toList();
-        List<DeviceActionAvro> deviceActionsAvro = scenarioAddedEvent.getActions().stream()
+        List<DeviceActionAvro> deviceActionsAvro = scenarioAddedEvent.getActionList().stream()
                 .map(this::deviceActionToAvro)
                 .toList();
         return ScenarioAddedEventAvro.newBuilder()
@@ -36,26 +36,26 @@ public class HubAvroMapper {
                 .build();
     }
 
-    public ScenarioRemovedEventAvro scenarioRemovedToAvro(ScenarioRemovedEvent scenarioRemovedEvent) {
+    public ScenarioRemovedEventAvro scenarioRemovedToAvro(ScenarioRemovedEventProto scenarioRemovedEvent) {
         return ScenarioRemovedEventAvro.newBuilder()
                 .setName(scenarioRemovedEvent.getName())
                 .build();
     }
 
 
-    private ScenarioConditionAvro scenarioConditionToAvro(ScenarioCondition scenarioCondition) {
+    private ScenarioConditionAvro scenarioConditionToAvro(ScenarioConditionProto scenarioCondition) {
         return ScenarioConditionAvro.newBuilder()
                 .setSensorId(scenarioCondition.getSensorId())
-                .setType(scenarioCondition.getType())
-                .setOperation(scenarioCondition.getOperation())
-                .setValue(scenarioCondition.getValue())
+                .setType(ConditionTypeAvro.valueOf(scenarioCondition.getType().name()))
+                .setOperation(ConditionOperationAvro.valueOf(scenarioCondition.getOperation().name()))
+                .setValue(scenarioCondition.hasIntValue() ? scenarioCondition.getIntValue() : scenarioCondition.getBoolValue())
                 .build();
     }
 
-    private DeviceActionAvro deviceActionToAvro(DeviceAction deviceAction) {
+    private DeviceActionAvro deviceActionToAvro(DeviceActionProto deviceAction) {
         return DeviceActionAvro.newBuilder()
                 .setSensorId(deviceAction.getSensorId())
-                .setType(deviceAction.getType())
+                .setType(ActionTypeAvro.valueOf(deviceAction.getType().name()))
                 .setValue(deviceAction.getValue())
                 .build();
     }

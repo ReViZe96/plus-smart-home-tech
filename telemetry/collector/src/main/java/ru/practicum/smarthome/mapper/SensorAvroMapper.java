@@ -1,13 +1,13 @@
 package ru.practicum.smarthome.mapper;
 
 import org.springframework.stereotype.Service;
-import ru.practicum.smarthome.dto.sensor.*;
+import ru.yandex.practicum.grpc.telemetry.event.*;
 import ru.yandex.practicum.kafka.telemetry.event.*;
 
 @Service
 public class SensorAvroMapper {
 
-    public ClimateSensorAvro climatSensorToAvro(ClimatSensorEvent climatEvent) {
+    public ClimateSensorAvro climatSensorToAvro(ClimateSensorProto climatEvent) {
         return ClimateSensorAvro.newBuilder()
                 .setTemperatureC(climatEvent.getTemperatureC())
                 .setHumidity(climatEvent.getHumidity())
@@ -15,32 +15,29 @@ public class SensorAvroMapper {
                 .build();
     }
 
-    public LightSensorAvro lightSensorToAvro(LightSensorEvent lightEvent) {
+    public LightSensorAvro lightSensorToAvro(LightSensorProto lightEvent) {
         return LightSensorAvro.newBuilder()
                 .setLinkQuality(lightEvent.getLinkQuality())
                 .setLuminosity(lightEvent.getLuminosity())
                 .build();
     }
 
-    public MotionSensorAvro motionSensorToAvro(MotionSensorEvent motionEvent) {
+    public MotionSensorAvro motionSensorToAvro(MotionSensorProto motionEvent) {
         return MotionSensorAvro.newBuilder()
                 .setLinkQuality(motionEvent.getLinkQuality())
-                .setMotion(motionEvent.isMotion())
+                .setMotion(motionEvent.getMotion())
                 .setVoltage(motionEvent.getVoltage())
                 .build();
     }
 
-    public SwitchSensorAvro switchSensorToAvro(SwitchSensorEvent switchEvent) {
+    public SwitchSensorAvro switchSensorToAvro(SwitchSensorProto switchEvent) {
         return SwitchSensorAvro.newBuilder()
-                .setState(switchEvent.isState())
+                .setState(switchEvent.getState())
                 .build();
     }
 
-    public TemperatureSensorAvro temperatureSensorToAvro(TemperatureSensorEvent temperatureEvent) {
+    public TemperatureSensorAvro temperatureSensorToAvro(TemperatureSensorProto temperatureEvent) {
         return TemperatureSensorAvro.newBuilder()
-                .setId(temperatureEvent.getId())
-                .setHubId(temperatureEvent.getHubId())
-                .setTimestamp(temperatureEvent.getTimestamp())
                 .setTemperatureC(temperatureEvent.getTemperatureC())
                 .setTemperatureF(temperatureEvent.getTemperatureF())
                 .build();
