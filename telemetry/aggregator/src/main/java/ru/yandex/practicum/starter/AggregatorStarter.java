@@ -78,16 +78,17 @@ public class AggregatorStarter {
         }
     }
 
-    public void sendToKafka(String topicName, String eventType, SpecificRecordBase event) {
+    public void sendToKafka(String topicName, String hubId, SpecificRecordBase snapshot) {
         ProducerRecord<String, SpecificRecordBase> producerSensorRecord = new ProducerRecord<>(
                 topicName,
                 null,
                 System.currentTimeMillis(),
-                eventType,
-                event);
+                hubId,
+                snapshot);
         Future<RecordMetadata> message = producer.send(producerSensorRecord);
         try {
             message.get();
+            log.info("Снапшот с актуализированными данными отправлен в топик {}", topicName);
         } catch (InterruptedException | ExecutionException e) {
             throw new RuntimeException("Ошибка во время отправки сообщения в Kafka");
         }

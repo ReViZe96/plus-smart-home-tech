@@ -1,5 +1,6 @@
 package ru.yandex.practicum.handlers;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.specific.SpecificRecordBase;
 import org.apache.kafka.clients.producer.*;
 import org.apache.kafka.common.serialization.StringSerializer;
@@ -10,6 +11,7 @@ import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
+@Slf4j
 @Component
 public class EventHandler {
 
@@ -25,6 +27,7 @@ public class EventHandler {
         Future<RecordMetadata> message = producer.send(producerSensorRecord);
         try {
             message.get();
+            log.info("Событие типа {} успешно отправлено в топик {}", eventType.toString(), topicName);
         } catch (InterruptedException | ExecutionException e) {
             throw new RuntimeException("Ошибка во время отправки сообщения в Kafka");
         }
