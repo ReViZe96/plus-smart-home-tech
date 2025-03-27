@@ -20,7 +20,7 @@ public class KafkaInitialization {
         Properties kafkaConfigs = new Properties();
         kafkaConfigs.put(ConsumerConfig.CLIENT_ID_CONFIG, "sensor-event-consumer");
         kafkaConfigs.put(ConsumerConfig.GROUP_ID_CONFIG, "aggregator-group");
-        kafkaConfigs.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        kafkaConfigs.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         kafkaConfigs.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         kafkaConfigs.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, SensorEventDeserializer.class.getName());
         return new KafkaConsumer<>(kafkaConfigs);
