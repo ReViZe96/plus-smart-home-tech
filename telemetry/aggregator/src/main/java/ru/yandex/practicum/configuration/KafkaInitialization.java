@@ -9,8 +9,8 @@ import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
-import ru.yandex.practicum.serializer.AggregatorDeserializer;
 import ru.yandex.practicum.serializer.AggregatorSerializer;
+import ru.yandex.practicum.serializer.SensorEventDeserializer;
 
 import java.util.Properties;
 
@@ -22,7 +22,7 @@ public class KafkaInitialization {
         kafkaConfigs.put(ConsumerConfig.GROUP_ID_CONFIG, "aggregator-group");
         kafkaConfigs.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         kafkaConfigs.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
-        kafkaConfigs.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, AggregatorDeserializer.class.getName());
+        kafkaConfigs.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, SensorEventDeserializer.class.getName());
         return new KafkaConsumer<>(kafkaConfigs);
     }
 

@@ -44,12 +44,17 @@ public class AggregatorStarter {
     public void start() {
         try {
             consumer.subscribe(List.of(TELEMETRY_SENSORS_V1));
+            Runtime.getRuntime().addShutdownHook(new Thread(consumer::wakeup));
+            log.info("Агрегатор подписался на топик " + TELEMETRY_SENSORS_V1);
 
             while (true) {
                 ConsumerRecords<String, SpecificRecordBase> records = consumer.poll(Duration.ofSeconds(5));
+                log.info("Получены " + records.count() + " записей о событиях из топика " + TELEMETRY_SENSORS_V1);
                 for (ConsumerRecord<String, SpecificRecordBase> record : records) {
                     SensorEventAvro sensorEvent = (SensorEventAvro) record.value();
                     Optional<SensorsSnapshotAvro> snapshot = aggregatorService.updateState(sensorEvent);
+                    log.info("Снапшот по хабу {} актуализирован с учетом данных события {}", sensorEvent.getHubId(),
+                            sensorEvent.getId());
                     snapshot.ifPresent(
                             sensorsSnapshotAvro -> sendToKafka(
                                     TELEMETRY_SNAPSHOTS_V1, sensorsSnapshotAvro.getHubId(), sensorsSnapshotAvro));
@@ -60,7 +65,8 @@ public class AggregatorStarter {
         } catch (WakeupException ignored) {
             // игнорируем - закрываем консьюмер и продюсер в блоке finally
         } catch (Exception e) {
-            log.error("Произошла ошибка при агрегации событий датчиков в снимки состояния");
+            log.error("Произошла ошибка при агрегации событий датчиков в снимки состояния. \n {} : \n {}", e.getMessage(),
+                    e.getStackTrace());
         } finally {
             try {
                 producer.flush();
