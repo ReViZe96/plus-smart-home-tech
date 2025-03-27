@@ -30,6 +30,8 @@ public class AggregatorService {
                     .setTimestamp(Instant.now())
                     .setSensorsState(new HashMap<>())
                     .build();
+            SensorStateAvro newSensorState = createSensorStateAvro(sensorEvent);
+            newSnapshot.getSensorsState().put(sensorEvent.getId(), newSensorState);
             allSnapshots.put(hubId, newSnapshot);
             return Optional.of(newSnapshot);
         } else {
@@ -44,17 +46,20 @@ public class AggregatorService {
             } else {
                 log.info("Получено новое событие с id = {}. Обновление данных по хабу {}.", sensorEvent.getId(),
                         existedSnapshot.getHubId());
-
-                SensorStateAvro newSensorState = SensorStateAvro.newBuilder()
-                        .setTimestamp(sensorEvent.getTimestamp())
-                        .setData(sensorEvent.getPayload())
-                        .build();
+                SensorStateAvro newSensorState = createSensorStateAvro(sensorEvent);
                 existedSnapshot.getSensorsState().put(sensorEvent.getId(), newSensorState);
                 existedSnapshot.setTimestamp(sensorEvent.getTimestamp());
                 allSnapshots.put(hubId, existedSnapshot);
                 return Optional.of(existedSnapshot);
             }
         }
+    }
+
+    private SensorStateAvro createSensorStateAvro(SensorEventAvro event) {
+        return SensorStateAvro.newBuilder()
+                .setTimestamp(event.getTimestamp())
+                .setData(event.getPayload())
+                .build();
     }
 
 }
