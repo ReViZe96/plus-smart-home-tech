@@ -34,7 +34,6 @@ public class ClimateSensorHandler extends SensorEventHandler {
                         event.getTimestampOrBuilder().getNanos()))
                 .setPayload(climateSensorAvro)
                 .build();
-        eventAvro.setPayload(climateSensorAvro);
         sendToKafka(TELEMETRY_SENSORS_V1, getMessageType().name(), eventAvro);
     }
 
