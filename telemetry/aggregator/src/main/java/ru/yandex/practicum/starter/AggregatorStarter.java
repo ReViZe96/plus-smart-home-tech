@@ -48,7 +48,7 @@ public class AggregatorStarter {
             log.info("Агрегатор подписался на топик " + TELEMETRY_SENSORS_V1);
 
             while (true) {
-                ConsumerRecords<String, SpecificRecordBase> records = consumer.poll(Duration.ofMillis(1000));
+                ConsumerRecords<String, SpecificRecordBase> records = consumer.poll(Duration.ofMillis(10000));
                 log.info("Получены " + records.count() + " записей о событиях из топика " + TELEMETRY_SENSORS_V1);
                 for (ConsumerRecord<String, SpecificRecordBase> record : records) {
                     SensorEventAvro sensorEvent = (SensorEventAvro) record.value();
