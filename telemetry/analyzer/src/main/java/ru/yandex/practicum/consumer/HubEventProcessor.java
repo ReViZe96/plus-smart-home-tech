@@ -45,7 +45,7 @@ public class HubEventProcessor implements Runnable {
 
             while (true) {
                 int count = 0;
-                ConsumerRecords<String, HubEventAvro> records = consumer.poll(Duration.ofMillis(10000));
+                ConsumerRecords<String, HubEventAvro> records = consumer.poll(Duration.ofMillis(1000));
                 log.info("Получены " + records.count() + " записей о событиях хаба из топика " + TELEMETRY_HUBS_V1);
                 for (ConsumerRecord<String, HubEventAvro> record : records) {
                     handleRecord(record.value());

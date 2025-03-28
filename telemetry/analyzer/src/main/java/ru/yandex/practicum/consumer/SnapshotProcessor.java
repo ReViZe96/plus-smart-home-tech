@@ -38,7 +38,7 @@ public class SnapshotProcessor {
             log.info("Анализатор подписался на топик " + TELEMETRY_SNAPSHOTS_V1);
 
             while (true) {
-                ConsumerRecords<String, SensorsSnapshotAvro> records = consumer.poll(Duration.ofMillis(10000));
+                ConsumerRecords<String, SensorsSnapshotAvro> records = consumer.poll(Duration.ofMillis(1000));
                 log.info("Получены " + records.count() + " снимков состояния из топика " + TELEMETRY_SNAPSHOTS_V1);
                 int count = 0;
                 for (ConsumerRecord<String, SensorsSnapshotAvro> record : records) {
