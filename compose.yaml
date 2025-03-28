@@ -39,6 +39,8 @@ services:
     container_name: smart-home-db
     ports:
       - "5432:5432"
+    volumes:
+      - ./telemetry/analyzer/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql
     environment:
       - POSTGRES_PASSWORD=12345
       - POSTGRES_USER=postgres
