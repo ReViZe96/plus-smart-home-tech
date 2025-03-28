@@ -42,14 +42,13 @@ public class SnapshotHandler {
                 ));
     }
 
-
     public void handle(SensorsSnapshotAvro snapshot) {
 
-        List<Scenario> currentHubscenarioList = scenarioRepository.findByHubId(snapshot.getHubId());
+        List<Scenario> scenariosWithCorrectConditions = scenarioRepository.findByHubId(snapshot.getHubId());
         Map<String, SensorStateAvro> snapshotSensorsStates = snapshot.getSensorsState();
 
-        List<Scenario> scenariosWithCorrectConditions = currentHubscenarioList.stream()
-                .filter(hubScenario -> isConditionsCorrect(hubScenario.getConditions(), snapshotSensorsStates))
+        scenariosWithCorrectConditions = scenariosWithCorrectConditions.stream()
+                .filter(scenario -> checkConditions(scenario.getConditions(), snapshotSensorsStates))
                 .toList();
 
         for (Scenario hubScenario : scenariosWithCorrectConditions) {
@@ -78,44 +77,46 @@ public class SnapshotHandler {
         }
     }
 
+    private boolean checkConditions(List<Condition> conditions, Map<String, SensorStateAvro> sensorStates) {
 
-    private boolean isConditionsCorrect(List<Condition> conditions, Map<String, SensorStateAvro> sensorStates) {
-        if (sensorStates == null || sensorStates.isEmpty())
-            return false;
-        if (conditions == null || conditions.isEmpty())
+        if (conditions == null || conditions.isEmpty()) {
             return true;
+        }
+        if (sensorStates == null || sensorStates.isEmpty()) {
+            return false;
+        }
         return conditions.stream()
-                .allMatch(
-                        condition -> isConditionCorrect(condition, sensorStates.get(condition.getSensor().getId())));
+                .allMatch(condition -> checkCondition(condition, sensorStates.get(condition.getSensor().getId())));
 
     }
 
-    private boolean isConditionCorrect(Condition condition, SensorStateAvro sensorState) {
-        if (condition == null || sensorState == null || sensorState.getData() == null)
+    private boolean checkCondition(Condition condition, SensorStateAvro sensorState) {
+        if (condition == null) {
             return false;
-
-        String sensorType = sensorState.getData().getClass().getName();
-        if (!sensorHandlers.containsKey(sensorType)) {
-            throw new RuntimeException("Передан сенсор неизвестного типа " + sensorType);
+        }
+        if (sensorState == null) {
+            return false;
+        }
+        if (sensorState.getData() == null) {
+            return false;
         }
 
-        Integer value = sensorHandlers.get(sensorType).getSensorValue(condition.getType(), sensorState);
-        if (value == null)
-            return false;
-
-        boolean isCorrect = false;
-        switch (condition.getOperation()) {
-            case ConditionOperator.LOWER_THAN:
-                isCorrect = value < condition.getValue();
-                break;
-            case ConditionOperator.EQUALS:
-                isCorrect = value.equals(condition.getValue());
-                break;
-            case ConditionOperator.GREATER_THAN:
-                isCorrect = value > condition.getValue();
-                break;
+        String type = sensorState.getData().getClass().getName();
+        if (!sensorHandlers.containsKey(type)) {
+            throw new IllegalArgumentException("Не найден обработчик для сенсора: " + type);
         }
-        return isCorrect;
+
+        Integer value = sensorHandlers.get(type).getSensorValue(condition.getType(), sensorState);
+
+        if (value == null) {
+            return false;
+        }
+
+        return switch (condition.getOperation()) {
+            case ConditionOperator.LOWER_THAN -> value < condition.getValue();
+            case ConditionOperator.EQUALS -> value.equals(condition.getValue());
+            case ConditionOperator.GREATER_THAN -> value > condition.getValue();
+        };
+
     }
-
 }
