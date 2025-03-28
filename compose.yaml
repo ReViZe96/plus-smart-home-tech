@@ -67,41 +67,41 @@ services:
         set -e
         psql postgresql://dbuser:12345@db:5432/analyzer -v ON_ERROR_STOP=1 <<-EOSQL
           CREATE TABLE IF NOT EXISTS scenarios (
-              id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-              hub_id VARCHAR,
-              name VARCHAR,
+              id serial PRIMARY KEY,
+              hub_id varchar,
+              name varchar,
               UNIQUE(hub_id, name)
           );
 
           CREATE TABLE IF NOT EXISTS sensors (
-              id VARCHAR PRIMARY KEY,
-              hub_id VARCHAR
+              id serial PRIMARY KEY,
+              hub_id varchar
           );
 
           CREATE TABLE IF NOT EXISTS conditions (
-              id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-              type VARCHAR,
-              operation VARCHAR,
-              value INTEGER
+              id serial PRIMARY KEY,
+              type varchar,
+              operation varchar,
+              value bigint
           );
 
           CREATE TABLE IF NOT EXISTS actions (
-              id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-              type VARCHAR,
-              value INTEGER
+              id serial PRIMARY KEY,
+              type varchar,
+              value varchar
           );
 
           CREATE TABLE IF NOT EXISTS scenario_conditions (
-              scenario_id BIGINT REFERENCES scenarios(id),
-              sensor_id VARCHAR REFERENCES sensors(id),
-              condition_id BIGINT REFERENCES conditions(id),
+              scenario_id bigint REFERENCES scenarios(id),
+              sensor_id varchar REFERENCES sensors(id),
+              condition_id bigint REFERENCES conditions(id),
               PRIMARY KEY (scenario_id, sensor_id, condition_id)
           );
 
           CREATE TABLE IF NOT EXISTS scenario_actions (
-              scenario_id BIGINT REFERENCES scenarios(id),
-              sensor_id VARCHAR REFERENCES sensors(id),
-              action_id BIGINT REFERENCES actions(id),
+              scenario_id bigint REFERENCES scenarios(id),
+              sensor_id varchar REFERENCES sensors(id),
+              action_id bigint REFERENCES actions(id),
               PRIMARY KEY (scenario_id, sensor_id, action_id)
           );
 
@@ -126,3 +126,4 @@ services:
           BEFORE INSERT ON scenario_actions
           FOR EACH ROW
           EXECUTE FUNCTION check_hub_id();
+          EOSQL
