@@ -2,7 +2,6 @@ package ru.yandex.practicum.handler.event.hub;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.kafka.telemetry.event.*;
 import ru.yandex.practicum.model.*;
 import ru.yandex.practicum.repository.ActionRepository;
@@ -29,7 +28,6 @@ public class ScenarioAddedEventHandler implements HubEventHandler {
         return ScenarioAddedEventAvro.class.getName();
     }
 
-    @Transactional
     @Override
     public void handle(HubEventAvro hubEvent) {
 
