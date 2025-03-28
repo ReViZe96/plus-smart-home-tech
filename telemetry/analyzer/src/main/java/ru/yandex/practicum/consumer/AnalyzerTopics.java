@@ -1,4 +1,4 @@
-package ru.yandex.practicum.serializer;
+package ru.yandex.practicum.consumer;
 
 public class AnalyzerTopics {
 

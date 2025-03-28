@@ -102,10 +102,9 @@ public class ScenarioAddedEventHandler implements HubEventHandler {
     }
 
     private Scenario mapToScenario(HubEventAvro hubEvent, ScenarioAddedEventAvro scenarioAddedEvent) {
-        Scenario scenario = Scenario.builder()
-                .hubId(hubEvent.getHubId())
-                .name(scenarioAddedEvent.getName())
-                .build();
+        Scenario scenario = new Scenario();
+        scenario.setHubId(hubEvent.getHubId());
+        scenario.setName(scenarioAddedEvent.getName());
         scenario.setConditions(scenarioAddedEvent.getConditions()
                 .stream()
                 .map(conditionAvro -> mapToCondition(scenario, conditionAvro))
@@ -118,10 +117,7 @@ public class ScenarioAddedEventHandler implements HubEventHandler {
     }
 
     private Condition mapToCondition(Scenario scenario, ScenarioConditionAvro conditionAvro) {
-        Sensor sensor = Sensor.builder()
-                .id(conditionAvro.getSensorId())
-                .hubId(scenario.getHubId())
-                .build();
+        Sensor sensor = new Sensor(conditionAvro.getSensorId(), scenario.getHubId());
         return Condition.builder()
                 .sensor(sensor)
                 .type(ConditionType.valueOf(conditionAvro.getType().name()))
@@ -132,10 +128,7 @@ public class ScenarioAddedEventHandler implements HubEventHandler {
     }
 
     private Action mapToAction(Scenario scenario, DeviceActionAvro deviceAction) {
-        Sensor sensor = Sensor.builder()
-                .id(deviceAction.getSensorId())
-                .hubId(scenario.getHubId())
-                .build();
+        Sensor sensor = new Sensor(deviceAction.getSensorId(), scenario.getHubId());
         return Action.builder()
                 .sensor(sensor)
                 .type(ActionType.valueOf(deviceAction.getType().name()))
@@ -143,7 +136,6 @@ public class ScenarioAddedEventHandler implements HubEventHandler {
                 .build();
     }
 
-    //###
     private Integer getConditionValue(Object value) {
         return switch (value) {
             case null -> null;

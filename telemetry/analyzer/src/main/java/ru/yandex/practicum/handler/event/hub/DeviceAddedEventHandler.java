@@ -21,10 +21,7 @@ public class DeviceAddedEventHandler implements HubEventHandler {
     @Override
     public void handle(HubEventAvro hubEvent) {
         DeviceAddedEventAvro deviceAddedEvent = (DeviceAddedEventAvro) hubEvent.getPayload();
-        Sensor sensor = Sensor.builder()
-                .id(deviceAddedEvent.getId())
-                .hubId(hubEvent.getHubId())
-                .build();
+        Sensor sensor = new Sensor(deviceAddedEvent.getId(), hubEvent.getHubId());
         sensorRepository.save(sensor);
     }
 
