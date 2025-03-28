@@ -7,12 +7,10 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.common.errors.WakeupException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.configuration.KafkaInitialization;
 import ru.yandex.practicum.handler.SnapshotHandler;
 import ru.yandex.practicum.kafka.telemetry.event.SensorsSnapshotAvro;
-import ru.yandex.practicum.serializer.SnapshotDeserializer;
 
 import java.time.Duration;
 import java.util.List;
@@ -23,18 +21,12 @@ import static ru.yandex.practicum.serializer.AnalyzerTopics.TELEMETRY_SNAPSHOTS_
 @Component
 public class SnapshotProcessor {
 
-    @Value("${analyzer.snapshot-consumer.client-id}")
-    private String clientId;
-
-    @Value("${analyzer.snapshot-consumer.group-id}")
-    private String groupId;
-
     private final Consumer<String, SpecificRecordBase> consumer;
     private final SnapshotHandler snapshotHandler;
 
     @Autowired
     public SnapshotProcessor(SnapshotHandler snapshotHandler) {
-        consumer = KafkaInitialization.initKafkaConsumer(clientId, groupId, SnapshotDeserializer.class.getName());
+        consumer = KafkaInitialization.initSnapshotConsumer();
         this.snapshotHandler = snapshotHandler;
     }
 

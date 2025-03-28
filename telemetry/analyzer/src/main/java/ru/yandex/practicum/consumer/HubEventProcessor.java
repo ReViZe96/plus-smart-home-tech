@@ -6,13 +6,10 @@ import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.common.errors.WakeupException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.configuration.KafkaInitialization;
 import ru.yandex.practicum.handler.event.hub.HubEventHandler;
 import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
-import ru.yandex.practicum.serializer.HubEventDeserializer;
 
 import java.time.Duration;
 import java.util.List;
@@ -27,18 +24,12 @@ import static ru.yandex.practicum.serializer.AnalyzerTopics.TELEMETRY_HUBS_V1;
 @Component
 public class HubEventProcessor implements Runnable {
 
-    @Value("${analyzer.hub-consumer.client-id}")
-    private String clientId;
-
-    @Value("${analyzer.hub-consumer.group-id}")
-    private String groupId;
-
     private final Consumer<String, SpecificRecordBase> consumer;
     private final Map<String, HubEventHandler> hubEventHandlers;
 
-    
+
     public HubEventProcessor(Set<HubEventHandler> hubEventHandlers) {
-        consumer = KafkaInitialization.initKafkaConsumer(clientId, groupId, HubEventDeserializer.class.getName());
+        consumer = KafkaInitialization.initHubConsumer();
         this.hubEventHandlers = hubEventHandlers.stream()
                 .collect(Collectors.toMap(
                         HubEventHandler::getEventType,
