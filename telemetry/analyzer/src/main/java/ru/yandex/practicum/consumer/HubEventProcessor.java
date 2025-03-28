@@ -36,7 +36,7 @@ public class HubEventProcessor implements Runnable {
     private final Consumer<String, SpecificRecordBase> consumer;
     private final Map<String, HubEventHandler> hubEventHandlers;
 
-    @Autowired
+    
     public HubEventProcessor(Set<HubEventHandler> hubEventHandlers) {
         consumer = KafkaInitialization.initKafkaConsumer(clientId, groupId, HubEventDeserializer.class.getName());
         this.hubEventHandlers = hubEventHandlers.stream()
