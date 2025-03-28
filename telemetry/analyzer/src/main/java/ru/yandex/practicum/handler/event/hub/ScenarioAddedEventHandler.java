@@ -10,7 +10,6 @@ import ru.yandex.practicum.repository.ConditionRepository;
 import ru.yandex.practicum.repository.ScenarioRepository;
 import ru.yandex.practicum.repository.SensorRepository;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -35,91 +34,91 @@ public class ScenarioAddedEventHandler implements HubEventHandler {
     public void handle(HubEventAvro hubEvent) {
 
         ScenarioAddedEventAvro scenarioEvent = (ScenarioAddedEventAvro) hubEvent.getPayload();
-        boolean isSensorExists = isSensorExists(scenarioEvent.getConditions(), scenarioEvent.getActions(),
-                hubEvent.getHubId());
-        if (!isSensorExists) {
-            throw new RuntimeException("Сенсоры не найдены");
-        }
+        checkSensors(scenarioEvent.getConditions(), scenarioEvent.getActions(), hubEvent.getHubId());
+        Optional<Scenario> existingScenario = scenarioRepository.findByHubIdAndName(hubEvent.getHubId(), scenarioEvent.getName());
 
-        Optional<Scenario> existedScenario = scenarioRepository.findByHubIdAndName(hubEvent.getHubId(),
-                scenarioEvent.getName());
+        Scenario scenario;
+        List<Long> prevConditionIds = null;
+        List<Long> prevActionsIds = null;
 
-        List<Long> prevConditionIds = new ArrayList<>();
-        List<Long> prevActionIds = new ArrayList<>();
-        Scenario currentScenario;
-        if (existedScenario.isPresent()) {
-            currentScenario = existedScenario.get();
-            prevConditionIds = currentScenario.getConditions().stream()
-                    .map(Condition::getId).toList();
-            prevActionIds = currentScenario.getActions().stream()
-                    .map(Action::getId).toList();
+        if (existingScenario.isPresent()) {
+            scenario = existingScenario.get();
+            prevConditionIds = scenario.getConditions().stream().map(Condition::getId).toList();
+            prevActionsIds = scenario.getActions().stream().map(Action::getId).toList();
 
-            currentScenario.setConditions(scenarioEvent.getConditions().stream()
-                    .map(conditionAvro -> mapToCondition(currentScenario, conditionAvro))
+            scenario.setConditions(scenarioEvent.getConditions().stream()
+                    .map(conditionAvro -> mapToCondition(scenario, conditionAvro))
                     .collect(Collectors.toList()));
-            currentScenario.setActions(scenarioEvent.getActions().stream()
-                    .map(actionAvro -> mapToAction(currentScenario, actionAvro))
+            scenario.setActions(scenarioEvent.getActions().stream()
+                    .map(actionAvro -> mapToAction(scenario, actionAvro))
                     .collect(Collectors.toList()));
         } else {
-            currentScenario = mapToScenario(hubEvent, scenarioEvent);
+            scenario = mapToScenario(hubEvent, scenarioEvent);
         }
 
-        scenarioRepository.save(currentScenario);
+        scenarioRepository.save(scenario);
         dropPrevConditions(prevConditionIds);
-        dropPrevActions(prevActionIds);
+        dropPrevActions(prevActionsIds);
+
     }
 
-    private boolean isSensorExists(Collection<ScenarioConditionAvro> conditions,
-                                   Collection<DeviceActionAvro> actions,
-                                   String hubId) {
-        List<String> sensorIds = getConditionSensorIds(conditions);
-        sensorIds.addAll(getActionSensorIds(actions));
-        List<String> notFounded = sensorIds.stream()
-                .filter(sensorId -> sensorRepository.findByIdAndHubId(sensorId, hubId).isEmpty())
-                .toList();
-        return notFounded.isEmpty();
+    private void checkSensors(Collection<ScenarioConditionAvro> conditions, Collection<DeviceActionAvro> actions, String hubId) {
+        List<String> conditionSensorIds = getConditionSensorIds(conditions);
+        List<String> actionSensorIds = getActionSensorIds(actions);
 
+        if (!sensorRepository.existsByIdInAndHubId(conditionSensorIds, hubId)) {
+            throw new RuntimeException("Сенсоры для scenarioCondition не найдены");
+        }
+        if (!sensorRepository.existsByIdInAndHubId(actionSensorIds, hubId)) {
+            throw new RuntimeException("Сенсоры для scenarioAction не найдены");
+        }
+    }
+
+    private List<String> getConditionSensorIds(Collection<ScenarioConditionAvro> conditions) {
+        return conditions.stream().map(ScenarioConditionAvro::getSensorId).collect(Collectors.toList());
+    }
+
+    private List<String> getActionSensorIds(Collection<DeviceActionAvro> actions) {
+        return actions.stream().map(DeviceActionAvro::getSensorId).collect(Collectors.toList());
     }
 
     private void dropPrevConditions(Collection<Long> conditionIds) {
-        if (!conditionIds.isEmpty()) {
+        if (conditionIds != null && !conditionIds.isEmpty()) {
             conditionRepository.deleteAllById(conditionIds);
         }
     }
 
     private void dropPrevActions(Collection<Long> actionIds) {
-        if (!actionIds.isEmpty()) {
+        if (actionIds != null && !actionIds.isEmpty()) {
             actionRepository.deleteAllById(actionIds);
         }
     }
 
-    private List<String> getConditionSensorIds(Collection<ScenarioConditionAvro> conditions) {
-        return conditions.stream().map(ScenarioConditionAvro::getSensorId).toList();
-    }
-
-    private List<String> getActionSensorIds(Collection<DeviceActionAvro> actions) {
-        return actions.stream().map(DeviceActionAvro::getSensorId).toList();
-    }
-
-    private Scenario mapToScenario(HubEventAvro hubEvent, ScenarioAddedEventAvro scenarioAddedEvent) {
+    private Scenario mapToScenario(HubEventAvro hubEventAvro, ScenarioAddedEventAvro scenarioAddedEventAvro) {
         Scenario scenario = new Scenario();
-        scenario.setHubId(hubEvent.getHubId());
-        scenario.setName(scenarioAddedEvent.getName());
-        scenario.setConditions(scenarioAddedEvent.getConditions()
-                .stream()
+        scenario.setHubId(hubEventAvro.getHubId());
+        scenario.setName(scenarioAddedEventAvro.getName());
+        scenario.setConditions(scenarioAddedEventAvro.getConditions().stream()
                 .map(conditionAvro -> mapToCondition(scenario, conditionAvro))
                 .toList());
-        scenario.setActions(scenarioAddedEvent.getActions()
-                .stream()
+        scenario.setActions(scenarioAddedEventAvro.getActions().stream()
                 .map(actionAvro -> mapToAction(scenario, actionAvro))
                 .toList());
+
         return scenario;
     }
 
+    private Action mapToAction(Scenario scenario, DeviceActionAvro deviceActionAvro) {
+        return Action.builder()
+                .sensor(new Sensor(deviceActionAvro.getSensorId(), scenario.getHubId()))
+                .type(ActionType.valueOf(deviceActionAvro.getType().name()))
+                .value(deviceActionAvro.getValue())
+                .build();
+    }
+
     private Condition mapToCondition(Scenario scenario, ScenarioConditionAvro conditionAvro) {
-        Sensor sensor = new Sensor(conditionAvro.getSensorId(), scenario.getHubId());
         return Condition.builder()
-                .sensor(sensor)
+                .sensor(new Sensor(conditionAvro.getSensorId(), scenario.getHubId()))
                 .type(ConditionType.valueOf(conditionAvro.getType().name()))
                 .operation(ConditionOperator.valueOf(conditionAvro.getOperation().name()))
                 .value(getConditionValue(conditionAvro.getValue()))
@@ -127,22 +126,17 @@ public class ScenarioAddedEventHandler implements HubEventHandler {
                 .build();
     }
 
-    private Action mapToAction(Scenario scenario, DeviceActionAvro deviceAction) {
-        Sensor sensor = new Sensor(deviceAction.getSensorId(), scenario.getHubId());
-        return Action.builder()
-                .sensor(sensor)
-                .type(ActionType.valueOf(deviceAction.getType().name()))
-                .value(deviceAction.getValue())
-                .build();
-    }
-
-    private Integer getConditionValue(Object value) {
-        return switch (value) {
-            case null -> null;
-            case Integer i -> i;
-            case Boolean b -> (b ? 1 : 0);
-            default -> throw new ClassCastException("Передан некорректный тип значения условия");
-        };
+    private Integer getConditionValue(Object conditionValue) {
+        if (conditionValue == null) {
+            return null;
+        }
+        if (conditionValue instanceof Boolean) {
+            return ((Boolean) conditionValue ? 1 : 0);
+        }
+        if (conditionValue instanceof Integer) {
+            return (Integer) conditionValue;
+        }
+        throw new ClassCastException("Ошибка преобразования значения условия");
     }
 
 }
