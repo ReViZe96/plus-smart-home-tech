@@ -36,74 +36,15 @@ services:
 
   db:
     image: postgres:16.1
-    container_name: postgres-analyzer
+    container_name: smart-home-db
     ports:
-      - "6542:5432"
-    volumes:
-      - ./telemetry/analyzer/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql
-      - ./telemetry/analyzer/src/main/resources/db:/var/lib/postgresql/data
-      - /etc/timezone:/etc/timezone:ro
-      - /etc/localtime:/etc/localtime:ro
+      - "5432:5432"
     environment:
-      - POSTGRES_DB=analyzer
-      - POSTGRES_USER=dbuser
       - POSTGRES_PASSWORD=12345
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=analyzer
     healthcheck:
       test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
       timeout: 5s
       interval: 5s
       retries: 10
-
-  db-init:
-    image: postgres:16.1
-    container_name: db-init
-    # секция для указания зависимостей от других сервисов
-    depends_on:
-      # указываем, что этот сервис зависит от сервиса с именем db
-      db:
-        # указываем, что условием запуска будет момент, когда
-        # сервис db будет в «здоровом» состоянии
-        condition: service_healthy
-    entrypoint:
-      - bash
-      - -c
-      - |
-        set -e
-        psql postgresql://dbuser:12345@db:5432/analyzer -v ON_ERROR_STOP=1 <<-EOSQL
-          CREATE TABLE IF NOT EXISTS scenarios (
-              id serial PRIMARY KEY,
-              hub_id varchar,
-              name varchar,
-              UNIQUE(hub_id, name)
-          );
-
-          CREATE TABLE IF NOT EXISTS sensors (
-              id varchar PRIMARY KEY,
-              hub_id varchar
-          );
-
-          CREATE TABLE IF NOT EXISTS conditions (
-              id serial PRIMARY KEY,
-              type varchar,
-              operation varchar,
-              value bigint
-          );
-
-          CREATE TABLE IF NOT EXISTS actions (
-              id serial PRIMARY KEY,
-              type varchar,
-              value varchar
-          );
-
-          CREATE TABLE IF NOT EXISTS scenario_conditions (
-              scenario_id bigint REFERENCES scenarios(id),
-              condition_id bigint REFERENCES conditions(id),
-              PRIMARY KEY (scenario_id, condition_id)
-          );
-        
-          CREATE TABLE IF NOT EXISTS scenario_actions (
-            scenario_id bigint REFERENCES scenarios(id),
-            action_id bigint REFERENCES actions(id),
-            PRIMARY KEY (scenario_id, action_id)
-          );
-        EOSQL
