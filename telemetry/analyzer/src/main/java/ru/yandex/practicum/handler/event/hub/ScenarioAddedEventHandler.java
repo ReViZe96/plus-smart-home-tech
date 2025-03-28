@@ -75,7 +75,7 @@ public class ScenarioAddedEventHandler implements HubEventHandler {
         List<String> sensorIds = getConditionSensorIds(conditions);
         sensorIds.addAll(getActionSensorIds(actions));
         List<String> notFounded = sensorIds.stream()
-                .filter(sensorId -> sensorRepository.findByIdInAndHubId(sensorId, hubId).isEmpty())
+                .filter(sensorId -> sensorRepository.findByIdAndHubId(sensorId, hubId).isEmpty())
                 .toList();
         return notFounded.isEmpty();
 
