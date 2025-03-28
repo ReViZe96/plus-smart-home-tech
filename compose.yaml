@@ -75,7 +75,7 @@ services:
           );
 
           CREATE TABLE IF NOT EXISTS sensors (
-              id serial PRIMARY KEY,
+              id varchar PRIMARY KEY,
               hub_id varchar
           );
 
@@ -94,13 +94,15 @@ services:
 
           CREATE TABLE IF NOT EXISTS scenario_conditions (
               scenario_id bigint REFERENCES scenarios(id),
+              sensor_id varchar REFERENCES sensors(id),
               condition_id bigint REFERENCES conditions(id),
-              PRIMARY KEY (scenario_id, condition_id)
+              PRIMARY KEY (scenario_id, sensor_id, condition_id)
           );
         
           CREATE TABLE IF NOT EXISTS scenario_actions (
             scenario_id bigint REFERENCES scenarios(id),
+            sensor_id varchar REFERENCES sensors(id),
             action_id bigint REFERENCES actions(id),
-            PRIMARY KEY (scenario_id, action_id)
+            PRIMARY KEY (scenario_id, sensor_id, action_id)
           );
         EOSQL
