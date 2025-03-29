@@ -43,7 +43,7 @@ services:
 #      - ./telemetry/analyzer/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql
     environment:
       - POSTGRES_PASSWORD=12345
-      - POSTGRES_USER=postgres
+      - POSTGRES_USER=dbuser
       - POSTGRES_DB=analyzer
     healthcheck:
       test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
@@ -66,7 +66,7 @@ services:
       - -c
       - |
         set -e
-        psql postgresql://postgres:12345@db:5432/analyzer -v ON_ERROR_STOP=1 <<-EOSQL
+        psql postgresql://dbuser:12345@db:5432/analyzer -v ON_ERROR_STOP=1 <<-EOSQL
           CREATE TABLE IF NOT EXISTS scenarios(
             id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
             hub_id VARCHAR,
