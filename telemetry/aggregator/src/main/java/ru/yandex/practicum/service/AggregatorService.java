@@ -15,7 +15,7 @@ import java.util.Optional;
 @Service
 public class AggregatorService {
 
-    Map<String, SensorsSnapshotAvro> allSnapshots = new HashMap<>();
+    private Map<String, SensorsSnapshotAvro> allSnapshots = new HashMap<>();
 
     public Optional<SensorsSnapshotAvro> updateState(SensorEventAvro sensorEvent) {
 
