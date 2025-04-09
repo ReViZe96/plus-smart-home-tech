@@ -17,7 +17,7 @@ public class KafkaConfiguration {
     @Value("${analyzer.kafka.bootstrap-servers}")
     private String bootstrapServers;
 
-    @Value("${analyzer.kafka.snapshot.client-id}")
+    @Value("${analyzer.kafka.snapshot-consumer.client-id}")
     private String snapshotClientId;
 
     @Value("${analyzer.kafka.snapshot-consumer.group-id}")
