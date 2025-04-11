@@ -37,13 +37,13 @@ public interface ShoppingCartClient {
      * @param username имя пользователя
      */
     @DeleteMapping("/api/v1/shopping-cart")
-    void clearUserCart(@RequestParam(required = true) String username);
+    void deactivateUserCart(@RequestParam(required = true) String username);
 
     /**
-     * Изменить состав товаров в корзине, т.е. удалить другие.
+     * Изменить состав товаров в корзине, т.е. удалить переданные в параметре products.
      *
      * @param username имя пользователя
-     * @param products мапа, где ключ - идентификатор товара, а значение - отобранное количество этого товара
+     * @param products мапа, где ключ - идентификатор товара, а значение - удаляемое количество этого товара
      * @return Корзина товаров с изменениями
      */
     @PostMapping("/api/v1/shopping-cart/remove")
@@ -54,7 +54,7 @@ public interface ShoppingCartClient {
      * Изменить количество товаров в корзине.
      *
      * @param username              имя пользователя
-     * @param changeProductQuantity отображение идентификатора товара на отобранное количество
+     * @param changeProductQuantity отображение идентификатора товара на новое количество этого товара
      * @return Актуальный товар со всеми сведениями из БД
      */
     @PostMapping("/api/v1/shopping-cart/change-quantity")

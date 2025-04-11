@@ -10,11 +10,11 @@ public interface ShoppingCartService {
 
     ShoppingCartDto getCart(String username);
 
-    ShoppingCartDto addProductsToCart(String username, Map<String, Integer> products);
+    ShoppingCartDto addProductsToCart(String username, Map<String, Integer> addingProducts);
 
-    void clearCart(String username);
+    void deactivateCart(String username);
 
-    ShoppingCartDto removeProductFromCart(String username, Map<String, Integer> products);
+    ShoppingCartDto removeProductFromCart(String username, Map<String, Integer> removingProducts);
 
     ProductDto setProductAmountInCart(String username, ChangeProductQuantityRequest changeProductQuantity);
 

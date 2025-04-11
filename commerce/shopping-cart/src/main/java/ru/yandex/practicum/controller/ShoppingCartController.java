@@ -18,7 +18,7 @@ public class ShoppingCartController {
 
     /**
      * Получить актуальную корзину для авторизованного пользователя.
-     *
+     * Если у пользователя еще нет корзины - создать ее.
      * @param username имя пользователя
      * @return Ранее созданная или новая корзина в онлайн магазине
      */
@@ -46,16 +46,16 @@ public class ShoppingCartController {
      * @param username имя пользователя
      */
     @DeleteMapping
-    public ResponseEntity<Void> clearUserCart(@RequestParam String username) {
-        shoppingCartService.clearCart(username);
+    public ResponseEntity<Void> deactivateUserCart(@RequestParam String username) {
+        shoppingCartService.deactivateCart(username);
         return ResponseEntity.ok().build();
     }
 
     /**
-     * Изменить состав товаров в корзине, т.е. удалить другие.
+     * Изменить состав товаров в корзине, т.е. удалить переданные в параметре products.
      *
      * @param username имя пользователя
-     * @param products мапа, где ключ - идентификатор товара, а значение - отобранное количество этого товара
+     * @param products мапа, где ключ - идентификатор товара, а значение - удаляемое количество этого товара
      * @return Корзина товаров с изменениями
      */
     @PostMapping("/remove")
@@ -68,7 +68,7 @@ public class ShoppingCartController {
      * Изменить количество товаров в корзине.
      *
      * @param username              имя пользователя
-     * @param changeProductQuantity отображение идентификатора товара на отобранное количество
+     * @param changeProductQuantity отображение идентификатора товара на новое количество этого товара
      * @return Актуальный товар со всеми сведениями из БД
      */
     @PostMapping("/change-quantity")
