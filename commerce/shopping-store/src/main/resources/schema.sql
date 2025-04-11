@@ -7,4 +7,4 @@ CREATE TABLE IF NOT EXISTS Products (
                       product_state varchar(10) NOT NULL,
                       category varchar(10),
                       price real
-                    );
+);

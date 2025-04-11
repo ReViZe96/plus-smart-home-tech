@@ -5,6 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.clients.ShoppingStoreClient;
+import ru.yandex.practicum.clients.WarehouseClient;
 import ru.yandex.practicum.dto.ProductDto;
 import ru.yandex.practicum.dto.ShoppingCartDto;
 import ru.yandex.practicum.dto.request.ChangeProductQuantityRequest;
@@ -26,6 +28,8 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
 
     private final CartRepository cartRepository;
     private final CartMapper cartMapper;
+    private final ShoppingStoreClient shoppingStoreClient;
+    private final WarehouseClient warehouseClient;
 
 
     @Override
@@ -51,7 +55,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
         ShoppingCartDto updatedUsersCart = cartMapper.cartToShoppingCartDto(usersCart);
 
         log.debug("Проверка наличия добавляемого в корзину товара в нужном количестве на складе - вызов внешнего сервиса");
-        //WarehouseClient.checkProductAmountInWarehouse(updatedUsersCart);
+        warehouseClient.checkProductAmountInWarehouse(updatedUsersCart);
 
         cartRepository.save(cartMapper.shoppingCartDtoToCart(updatedUsersCart));
         return updatedUsersCart;
@@ -106,9 +110,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
             }
             log.debug("Получение информации о продукте {}, из внешнего сервиса",
                     changeProductQuantity.getProductId());
-            //return ShoppingStoreClient.getProductById(changeProductQuantity.getProductId())
-            return ProductDto.builder().build();
-
+            return shoppingStoreClient.getProductById(changeProductQuantity.getProductId());
         } else {
             throw new NoProductsInShoppingCartException("Попытка изменить количество товара в несуществующей корзине");
         }
@@ -159,7 +161,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
 
         ShoppingCartDto updatingCartDto = cartMapper.cartToShoppingCartDto(updatingCart);
         log.debug("Проверка наличия добавляемого в корзину товара в нужном количестве на складе - вызов внешнего сервиса");
-        //WarehouseClient.checkProductAmountInWarehouse(updatingCartDto);
+        warehouseClient.checkProductAmountInWarehouse(updatingCartDto);
         cartRepository.save(updatingCart);
     }
 

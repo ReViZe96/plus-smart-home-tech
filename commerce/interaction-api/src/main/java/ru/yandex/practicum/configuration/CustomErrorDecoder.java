@@ -4,6 +4,7 @@ import feign.Response;
 import feign.codec.ErrorDecoder;
 import ru.yandex.practicum.exception.NotAuthorizedUserException;
 import ru.yandex.practicum.exception.ProductNotFoundException;
+import ru.yandex.practicum.exception.SpecifiedProductAlreadyInWarehouseException;
 
 public class CustomErrorDecoder implements ErrorDecoder {
 
@@ -26,6 +27,17 @@ public class CustomErrorDecoder implements ErrorDecoder {
 //    }
 //        if (response.status() == 401) {
 //        return new NotAuthorizedUserException("User is not authorized. For method: " + methodKey);
+
+
+    //--------------------------warehouse-exceptions----------------------------------
+//            if (response.status() == 400) {
+//        return new SpecifiedProductAlreadyInWarehouseException("Product already in warehouse. For method: " + methodKey);
+//        //return new ProductInShoppingCartLowQuantityInWarehouse("Amount of product in warehouse is low. For method: " + methodKey);
+//        //return new NoSpecifiedProductInWarehouseException("Product not exist in warehouse yet. For method: " + methodKey);
+//    }
+//        if (response.status() == 401) {
+//        return new NotAuthorizedUserException("User is not authorized. For method: " + methodKey);
+//    }
 
 
 }

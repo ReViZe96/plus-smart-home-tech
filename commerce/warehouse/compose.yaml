@@ -1,0 +1,46 @@
+services:
+  db-warehouse:
+    image: postgres:16.1
+    container_name: warehouse-postgres
+    ports:
+      - "5440:5440"
+    volumes:
+      - ./postgresql.conf:/etc/postgresql/postgresql.conf
+      - ./volumes/postgres:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=warehousedb
+      - POSTGRES_USER=warehouse_user
+      - POSTGRES_PASSWORD=12345
+    healthcheck:
+      test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
+      timeout: 5s
+      interval: 5s
+      retries: 10
+
+  db-init-warehouse:
+    image: postgres:16.1
+    container_name: db-init-warehouse
+    depends_on:
+      db-warehouse:
+        condition: service_healthy
+    entrypoint:
+      - bash
+      - -c
+      - |
+        set -e
+        psql postgresql://warehouse_user:12345@db:5440/warehousedb -v ON_ERROR_STOP=1 <<-EOSQL
+          CREATE TABLE IF NOT EXISTS Products (
+                      id varchar(100) PRIMARY KEY,
+                      quantity_in_warehouse bigint,
+                      fragile boolean,
+                      weight real,
+                      width real,
+                      height real,
+                      depth real
+          );
+  
+          CREATE TABLE IF NOT EXISTS Warehouses (
+                      id varchar(100) PRIMARY KEY,
+                      address varchar(1024)
+          );
+        EOSQL

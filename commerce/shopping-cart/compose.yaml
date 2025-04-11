@@ -1,10 +1,11 @@
 services:
-  db:
+  db-cart:
     image: postgres:16.1
     container_name: cart-postgres
     ports:
-      - "5432:5432"
+      - "5436:5436"
     volumes:
+      - ./postgresql.conf:/etc/postgresql/postgresql.conf
       - ./volumes/postgres:/var/lib/postgresql/data/
     environment:
       - POSTGRES_DB=cartdb
@@ -16,22 +17,22 @@ services:
       interval: 5s
       retries: 10
 
-  db-init:
+  db-init-cart:
     image: postgres:16.1
-    container_name: db-init
+    container_name: db-init-cart
     depends_on:
-      db:
+      db-cart:
         condition: service_healthy
     entrypoint:
       - bash
       - -c
       - |
         set -e
-        psql postgresql://cart_user:12345@db:5432/cartdb -v ON_ERROR_STOP=1 <<-EOSQL
+        psql postgresql://cart_user:12345@db:5436/cartdb -v ON_ERROR_STOP=1 <<-EOSQL
           CREATE TABLE IF NOT EXISTS Carts (
                       id varchar(100) PRIMARY KEY,
                       username varchar(50) NOT NULL,
-                      active boolean NOT NULL DEFAULT true
+                      active boolean NOT NULL
           );
   
           CREATE TABLE IF NOT EXISTS Products (
