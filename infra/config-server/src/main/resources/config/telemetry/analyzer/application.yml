@@ -1,6 +1,9 @@
 server:
   port: 0
 
+application:
+  name: analyzer
+
 grpc:
   client:
     hub-router:
@@ -10,8 +13,6 @@ grpc:
       negotiationType: plaintext
 
 spring:
-  application:
-    name: analyzer
   datasource:
     driverClassName: org.postgresql.Driver
     url: jdbc:postgresql://localhost:5432/analyzer
