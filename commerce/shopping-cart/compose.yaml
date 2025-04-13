@@ -28,7 +28,7 @@ services:
       - -c
       - |
         set -e
-        psql postgresql://cart_user:12345@db:5436/cartdb -v ON_ERROR_STOP=1 <<-EOSQL
+        psql postgresql://cart_user:12345@db-cart:5436/cartdb -v ON_ERROR_STOP=1 <<-EOSQL
           CREATE TABLE IF NOT EXISTS Carts (
                       id varchar(100) PRIMARY KEY,
                       username varchar(50) NOT NULL,
