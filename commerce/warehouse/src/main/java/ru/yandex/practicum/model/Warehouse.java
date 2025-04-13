@@ -18,7 +18,15 @@ public class Warehouse {
     @Id
     @Column(name = "id")
     private String id;
-    @Column(name = "address")
-    private String address;
+    @Column(name = "address_city")
+    private String city;
+    @Column(name = "address_street")
+    private String street;
+    @Column(name = "address_house")
+    private String house;
+    @Column(name = "address_country")
+    private String country;
+    @Column(name = "address_flat")
+    private String flat;
 
 }

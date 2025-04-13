@@ -38,7 +38,7 @@ public class ShoppingStoreController {
      * @param addingProduct описательная часть вновь добавляемого товара в систему, например нового роутера и т.д.
      */
     @PutMapping
-    public ResponseEntity<ProductDto> addNewProduct(@RequestBody ProductDto addingProduct) {
+    public ResponseEntity<ProductDto> createNewItem(@RequestBody ProductDto addingProduct) {
         return ResponseEntity.ok(shoppingStoreService.addProduct(addingProduct));
     }
 

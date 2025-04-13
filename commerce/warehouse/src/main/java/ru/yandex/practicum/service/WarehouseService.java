@@ -8,11 +8,11 @@ import ru.yandex.practicum.dto.request.NewProductInWarehouseRequest;
 
 public interface WarehouseService {
 
-    void addNewProduct(NewProductInWarehouseRequest newProductInWarehouse);
+    void createNewItem(NewProductInWarehouseRequest newProductInWarehouse);
 
     BookedProductsDto checkProductAmount(ShoppingCartDto shoppingCart);
 
-    void reviseProduct(AddProductToWarehouseRequest addProductToWarehouse);
+    void addProduct(AddProductToWarehouseRequest addProductToWarehouse);
 
     AddressDto getWarehouseAddress();
 

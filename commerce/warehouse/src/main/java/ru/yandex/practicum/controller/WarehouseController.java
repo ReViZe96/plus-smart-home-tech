@@ -17,13 +17,13 @@ public class WarehouseController {
     private final WarehouseService warehouseService;
 
     /**
-     * Добавить новый товар на склад.
+     * Добавить новую позицию на склад.
      *
-     * @param newProductInWarehouse Описание нового товара для обработки складом.
+     * @param newProductInWarehouse Описание новой позиции товара, обрабатываемой складом.
      */
     @PutMapping
-    public ResponseEntity<Void> addNewProductToWarehouse(@RequestBody NewProductInWarehouseRequest newProductInWarehouse) {
-        warehouseService.addNewProduct(newProductInWarehouse);
+    public ResponseEntity<Void> createNewItemInWarehouse(@RequestBody NewProductInWarehouseRequest newProductInWarehouse) {
+        warehouseService.createNewItem(newProductInWarehouse);
         return ResponseEntity.ok().build();
     }
 
@@ -44,8 +44,8 @@ public class WarehouseController {
      * @param addProductToWarehouse запрос на добавление определенного количества определенного товара
      */
     @PostMapping("/add")
-    public ResponseEntity<Void> reviseProductToWarehouse(@RequestBody AddProductToWarehouseRequest addProductToWarehouse) {
-        warehouseService.reviseProduct(addProductToWarehouse);
+    public ResponseEntity<Void> addProductToWarehouse(@RequestBody AddProductToWarehouseRequest addProductToWarehouse) {
+        warehouseService.addProduct(addProductToWarehouse);
         return ResponseEntity.ok().build();
     }
 

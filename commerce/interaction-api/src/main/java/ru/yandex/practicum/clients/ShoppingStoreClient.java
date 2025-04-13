@@ -23,7 +23,7 @@ public interface ShoppingStoreClient {
      * @param addingProduct описательная часть вновь добавляемого товара в систему, например нового роутера и т.д.
      */
     @PutMapping("/api/v1/shopping-store")
-    ProductDto addNewProduct(@RequestBody(required = true) ProductDto addingProduct);
+    ProductDto createNewItem(@RequestBody(required = true) ProductDto addingProduct);
 
     /**
      * Обновление товара в ассортименте, например уточнение описания, характеристик и т.д.

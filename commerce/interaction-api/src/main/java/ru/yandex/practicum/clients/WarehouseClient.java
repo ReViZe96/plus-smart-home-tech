@@ -15,13 +15,12 @@ import ru.yandex.practicum.dto.ShoppingCartDto;
 public interface WarehouseClient {
 
     /**
-     * Добавить новый товар на склад.
+     * Добавить новую позицию на склад.
      *
-     * @param newProductInWarehouse Описание нового товара для обработки складом.
+     * @param newProductInWarehouse Описание новой позиции товара, обрабатываемой складом.
      */
     @PutMapping("/api/v1/warehouse")
-    //в случае, когда товар с данным описанием уже имеется на складе (400) - SpecifiedProductAlreadyInWarehouseException
-    void addNewProductToWarehouse(@RequestBody(required = true) NewProductInWarehouseRequest newProductInWarehouse);
+    void createNewItemInWarehouse(@RequestBody(required = true) NewProductInWarehouseRequest newProductInWarehouse);
 
     /**
      * Предварительно проверить что количество товаров на складе достаточно для данной корзиный продуктов.
@@ -30,7 +29,6 @@ public interface WarehouseClient {
      * @return Общие сведения по бронированию
      */
     @PostMapping("/api/v1/warehouse/check")
-    //в случае, когда товар из корзины не находится в требуемом количестве на складе (400) - ProductInShoppingCartLowQuantityInWarehouse
     BookedProductsDto checkProductAmountInWarehouse(@RequestBody(required = true) ShoppingCartDto shoppingCart);
 
     /**
@@ -39,7 +37,6 @@ public interface WarehouseClient {
      * @param addProductToWarehouse запрос на добавление определенного количества определенного товара
      */
     @PostMapping("/api/v1/warehouse/add")
-    //в случае, когда нет информации о товаре на складе (400) - NoSpecifiedProductInWarehouseException
     void reviseProductToWarehouse(@RequestBody(required = true) AddProductToWarehouseRequest addProductToWarehouse);
 
     /**

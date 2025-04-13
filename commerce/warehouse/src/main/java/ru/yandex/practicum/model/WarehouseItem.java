@@ -9,11 +9,11 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "Products")
+@Table(name = "Items")
 @Getter
 @Setter
 @NoArgsConstructor
-public class Product {
+public class WarehouseItem {
 
     @Id
     @Column(name = "id")
