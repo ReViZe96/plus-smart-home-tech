@@ -1,0 +1,42 @@
+services:
+  db-store:
+    image: postgres:16.1
+    container_name: store-postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./postgresql.conf:/etc/postgresql/postgresql.conf
+      - ./volumes/postgres:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=storedb
+      - POSTGRES_USER=store_user
+      - POSTGRES_PASSWORD=12345
+    healthcheck:
+      test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
+      timeout: 5s
+      interval: 5s
+      retries: 10
+
+  db-init-store:
+    image: postgres:16.1
+    container_name: db-init-store
+    depends_on:
+      db-store:
+        condition: service_healthy
+    entrypoint:
+      - bash
+      - -c
+      - |
+        set -e
+        psql postgresql://store_user:12345@db:5432/storedb -v ON_ERROR_STOP=1 <<-EOSQL
+          CREATE TABLE IF NOT EXISTS Products (
+                      id varchar(100) PRIMARY KEY,
+                      name varchar(100) NOT NULL,
+                      description varchar(1024) NOT NULL,
+                      image_src varchar(100),
+                      quantity_state varchar(10) NOT NULL,
+                      product_state varchar(10) NOT NULL,
+                      category varchar(10),
+                      price real
+          );
+        EOSQL
