@@ -28,7 +28,7 @@ services:
       - -c
       - |
         set -e
-        psql postgresql://store_user:12345@db:5432/storedb -v ON_ERROR_STOP=1 <<-EOSQL
+        psql postgresql://store_user:12345@db-store:5432/storedb -v ON_ERROR_STOP=1 <<-EOSQL
           CREATE TABLE IF NOT EXISTS Products (
                       id varchar(100) PRIMARY KEY,
                       name varchar(100) NOT NULL,
