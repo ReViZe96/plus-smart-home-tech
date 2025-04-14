@@ -1,8 +1,8 @@
-server:
-  port: 8081
-
 application:
   name: collector
+
+server:
+  port: 8081
 
 grpc:
   server:
