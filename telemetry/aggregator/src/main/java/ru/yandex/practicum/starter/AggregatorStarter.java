@@ -1,13 +1,12 @@
 package ru.yandex.practicum.starter;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.specific.SpecificRecordBase;
 import org.apache.kafka.clients.consumer.*;
 import org.apache.kafka.clients.producer.*;
 import org.apache.kafka.common.errors.WakeupException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.configuration.KafkaInitialization;
 import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
 import ru.yandex.practicum.kafka.telemetry.event.SensorsSnapshotAvro;
 import ru.yandex.practicum.service.AggregatorService;
@@ -23,18 +22,12 @@ import static ru.yandex.practicum.serializer.AggregatorTopics.TELEMETRY_SNAPSHOT
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class AggregatorStarter {
 
     private final AggregatorService aggregatorService;
-    private final Producer<String, SpecificRecordBase> producer;
-    private final Consumer<String, SpecificRecordBase> consumer;
-
-    @Autowired
-    public AggregatorStarter(AggregatorService aggregatorService) {
-        consumer = KafkaInitialization.initKafkaConsumer();
-        producer = KafkaInitialization.initKafkaProducer();
-        this.aggregatorService = aggregatorService;
-    }
+    private final KafkaProducer<String, SpecificRecordBase> producer;
+    private final KafkaConsumer<String, SpecificRecordBase> consumer;
 
     /**
      * Метод для начала процесса агрегации данных.
