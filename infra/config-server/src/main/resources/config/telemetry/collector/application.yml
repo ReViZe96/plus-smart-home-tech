@@ -1,9 +1,6 @@
 application:
   name: collector
 
-server:
-  port: 8081
-
 grpc:
   server:
     port: 59091
