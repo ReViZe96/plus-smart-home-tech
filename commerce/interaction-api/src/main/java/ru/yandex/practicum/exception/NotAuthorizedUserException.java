@@ -7,7 +7,6 @@ import lombok.Data;
 @Builder
 public class NotAuthorizedUserException extends RuntimeException {
 
-    //добавить поля в соответствии со спецификацией
     private String userMessage;
 
     public NotAuthorizedUserException(String userMessage) {

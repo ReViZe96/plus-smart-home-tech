@@ -7,7 +7,6 @@ import lombok.Data;
 @Builder
 public class NoSpecifiedProductInWarehouseException extends RuntimeException {
 
-    //добавить поля в соответствии со спецификацией
     private String userMessage;
 
     public NoSpecifiedProductInWarehouseException(String userMessage) {
