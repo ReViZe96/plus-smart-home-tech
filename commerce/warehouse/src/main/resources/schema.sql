@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS Items (
+CREATE TABLE IF NOT EXISTS items (
                       id VARCHAR(100) PRIMARY KEY,
                       quantity_in_warehouse BIGINT,
                       fragile BOOLEAN,
@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS Items (
                       depth REAL
 );
 
-CREATE TABLE IF NOT EXISTS Warehouses (
+CREATE TABLE IF NOT EXISTS warehouses (
                       id VARCHAR(100) PRIMARY KEY,
                       address_city VARCHAR(64),
                       address_street VARCHAR(128),

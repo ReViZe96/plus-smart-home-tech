@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.clients.ShoppingStoreClient;
 import ru.yandex.practicum.clients.WarehouseClient;
 import ru.yandex.practicum.dto.ProductDto;
@@ -62,6 +63,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
     }
 
     @Override
+    @Transactional
     public void deactivateCart(String username) {
         checkUsername(username);
         Optional<Cart> deactivatingCart = cartRepository.findByUsername(username);

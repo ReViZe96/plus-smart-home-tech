@@ -7,7 +7,7 @@ import ru.yandex.practicum.enums.ProductState;
 import javax.validation.constraints.Min;
 
 @Entity
-@Table(name = "Products")
+@Table(name = "products")
 @Getter
 @Setter
 @NoArgsConstructor

@@ -2,6 +2,7 @@ package ru.yandex.practicum.clients;
 
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Pageable;
 import ru.yandex.practicum.dto.ProductDto;
 import ru.yandex.practicum.dto.request.SetProductQuantityStateRequest;
 
@@ -15,7 +16,7 @@ public interface ShoppingStoreClient {
      */
     @GetMapping("/api/v1/shopping-store")
     ProductDto getProductsByType(@RequestParam(value = "category", required = true) String category,
-                                 @RequestParam(value = "pageable", required = true) ru.yandex.practicum.other.Pageable pageable);
+                                 @RequestParam(value = "pageable", required = true) Pageable pageable);
 
     /**
      * Создание нового товара в ассортименте.

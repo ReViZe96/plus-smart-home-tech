@@ -2,10 +2,9 @@ package ru.yandex.practicum.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.dto.ProductDto;
 import ru.yandex.practicum.dto.request.SetProductQuantityStateRequest;
 import ru.yandex.practicum.exception.ProductNotFoundException;
@@ -14,23 +13,17 @@ import ru.yandex.practicum.model.Product;
 import ru.yandex.practicum.model.ProductCategory;
 import ru.yandex.practicum.repository.ProductRepository;
 
-import java.util.Arrays;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class ShoppingStoreServiceImpl implements ShoppingStoreService {
 
-    private static final List<String> sortingTypes = Arrays.asList("asc", "desc", "ascending", "descending");
-
     private final ProductRepository productRepository;
     private final ProductMapper productMapper;
 
     @Override
-    public Page<ProductDto> getProductsByType(ProductCategory category, ru.yandex.practicum.other.Pageable pageable) {
-        checkSortingType(pageable.getSort());
-        Pageable page = PageRequest.of(pageable.getPage(), pageable.getSize(), Sort.by(pageable.getSort(), "name"));
-        return productRepository.findAll(page).map(productMapper::productToProductDto);
+    public Page<ProductDto> getProductsByType(ProductCategory category, Pageable pageable) {
+        return productRepository.findAll(pageable).map(productMapper::productToProductDto);
     }
 
     @Override
@@ -54,6 +47,7 @@ public class ShoppingStoreServiceImpl implements ShoppingStoreService {
     }
 
     @Override
+    @Transactional
     public Boolean setQuantityState(SetProductQuantityStateRequest quantityState) {
         checkProductPresence(quantityState.getProductId());
         int updatedRow = productRepository.updateProductQuantityState(quantityState.getProductId(), quantityState.getQuantityState());
@@ -66,15 +60,6 @@ public class ShoppingStoreServiceImpl implements ShoppingStoreService {
         return productRepository.findById(productId).map(productMapper::productToProductDto).get();
     }
 
-
-    private void checkSortingType(String sort) {
-        for (String sorting : sortingTypes) {
-            if (sorting.equalsIgnoreCase(sort)) {
-                return;
-            }
-        }
-        throw new IllegalArgumentException("Передан некорректный тип сортировки продуктов на странице: " + sort);
-    }
 
     private void checkProductPresence(String productId) {
         if (productRepository.findById(productId).isEmpty()) {

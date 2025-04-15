@@ -29,7 +29,7 @@ services:
       - |
         set -e
         psql postgresql://warehouse_user:12345@db-warehouse:5440/warehousedb -v ON_ERROR_STOP=1 <<-EOSQL
-          CREATE TABLE IF NOT EXISTS Items (
+          CREATE TABLE IF NOT EXISTS items (
                       id varchar(100) PRIMARY KEY,
                       quantity_in_warehouse bigint,
                       fragile boolean,
@@ -38,8 +38,8 @@ services:
                       height real,
                       depth real
           );
-  
-          CREATE TABLE IF NOT EXISTS Warehouses (
+        
+          CREATE TABLE IF NOT EXISTS warehouses (
                       id varchar(100) PRIMARY KEY,
                       address_city VARCHAR(64),
                       address_street VARCHAR(128),

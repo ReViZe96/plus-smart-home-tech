@@ -2,13 +2,13 @@ package ru.yandex.practicum.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.dto.ProductDto;
 import ru.yandex.practicum.dto.request.SetProductQuantityStateRequest;
 import ru.yandex.practicum.model.ProductCategory;
 import ru.yandex.practicum.model.QuantityState;
-import ru.yandex.practicum.other.Pageable;
 import ru.yandex.practicum.service.ShoppingStoreService;
 
 @RestController("/api/v1/shopping-store")

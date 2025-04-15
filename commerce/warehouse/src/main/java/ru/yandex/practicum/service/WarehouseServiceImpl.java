@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.dto.AddressDto;
 import ru.yandex.practicum.dto.BookedProductsDto;
 import ru.yandex.practicum.dto.ShoppingCartDto;
@@ -45,7 +46,9 @@ public class WarehouseServiceImpl implements WarehouseService {
                     " уже имеется на складе");
         }
         log.debug("Старт сохранения информации о новой товарной позиции {} на складе", newProductInWarehouse.getProductId());
-        warehouseItemRepository.save(warehouseMapper.newProductRequestToProductItem(newProductInWarehouse));
+        WarehouseItem newItem = warehouseMapper.newProductRequestToWarehouseItem(newProductInWarehouse);
+        newItem.setQuantity(0);
+        warehouseItemRepository.save(newItem);
     }
 
     @Override
@@ -69,6 +72,7 @@ public class WarehouseServiceImpl implements WarehouseService {
     }
 
     @Override
+    @Transactional
     public void addProduct(AddProductToWarehouseRequest addProductToWarehouse) {
         Optional<WarehouseItem> updatingItem = warehouseItemRepository.findById(addProductToWarehouse.getProductId());
         if (updatingItem.isEmpty()) {
