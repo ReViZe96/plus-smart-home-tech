@@ -5,13 +5,14 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import ru.yandex.practicum.clients.fallback.WarehouseClientFallback;
 import ru.yandex.practicum.dto.request.AddProductToWarehouseRequest;
 import ru.yandex.practicum.dto.AddressDto;
 import ru.yandex.practicum.dto.BookedProductsDto;
 import ru.yandex.practicum.dto.request.NewProductInWarehouseRequest;
 import ru.yandex.practicum.dto.ShoppingCartDto;
 
-@FeignClient(name = "warehouse")
+@FeignClient(name = "warehouse", fallback = WarehouseClientFallback.class)
 public interface WarehouseClient {
 
     /**

@@ -1,0 +1,37 @@
+resilience4j.circuitbreaker:
+  configs:
+    # параметры расчета перехода между состояниями Circuit Breaker (общие для всех сервисов, т.к. в блоке default)
+    default:
+      # скользящее окно - на основании какого временного интервала/количества запросов ведется расчет
+      slidingWindowSize: 50
+      # процент ошибок для перехода в открытое состояние
+      failureRateThreshold: 50
+  instances:
+    shopping-cart:
+      slidingWindowSize: 10
+      # время ожидания, в течение которого Circuit Breaker останется в открытом состоянии перед переходом в полуоткрытое в миллисекундах
+      waitDurationInOpenState: 8000
+      # количество вызовов в полуоткрытом состоянии, которое нужно для проверки восстановления сервиса
+      permittedNumberOfCallsInHalfOpenState: 2
+      # тип скользящего окна:
+      #  COUNT_BASED — основанным на количестве вызовов (тип по умолчанию - процент ошибок failureRateThreshold за slidingWindowSize запросов);
+      #  TIME_BASED — основанным на времени (процент ошибок failureRateThreshold за slidingWindowSize секунд).
+      slidingWindowType: COUNT_BASED
+      # минимальное количество вызовов, необходимое для начала отслеживания состояния сервиса со стороны Circuit Breaker
+      minimumNumberOfCalls: 5
+      # активация автоматического перехода из открытого состояния в полуоткрытое
+      automaticTransitionFromOpenToHalfOpenEnabled: true
+    shopping-store:
+      slidingWindowSize: 100
+      waitDurationInOpenState: 7000
+      permittedNumberOfCallsInHalfOpenState: 3
+      slidingWindowType: COUNT_BASED
+      minimumNumberOfCalls: 50
+      automaticTransitionFromOpenToHalfOpenEnabled: true
+    warehouse:
+      slidingWindowSize: 10
+      waitDurationInOpenState: 10000
+      permittedNumberOfCallsInHalfOpenState: 1
+      slidingWindowType: TIME_BASED
+      minimumNumberOfCalls: 5
+      automaticTransitionFromOpenToHalfOpenEnabled: false
