@@ -2,13 +2,14 @@ package ru.yandex.practicum.clients;
 
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.clients.fallback.ShoppingCartClientFallback;
 import ru.yandex.practicum.dto.request.ChangeProductQuantityRequest;
 import ru.yandex.practicum.dto.ProductDto;
 import ru.yandex.practicum.dto.ShoppingCartDto;
 
 import java.util.Map;
 
-@FeignClient(name = "shopping-cart")
+@FeignClient(name = "shopping-cart", fallback = ShoppingCartClientFallback.class)
 public interface ShoppingCartClient {
 
     /**
