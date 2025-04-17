@@ -1,3 +1,6 @@
+application:
+  name: aggregator
+
 aggregator:
   kafka:
     bootstrap-servers: localhost:9092

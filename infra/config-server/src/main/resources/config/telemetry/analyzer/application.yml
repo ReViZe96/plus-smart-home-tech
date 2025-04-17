@@ -1,3 +1,6 @@
+application:
+  name: analyzer
+
 grpc:
   client:
     hub-router:

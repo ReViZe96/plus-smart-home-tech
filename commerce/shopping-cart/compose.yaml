@@ -1,0 +1,44 @@
+services:
+  db-cart:
+    image: postgres:16.1
+    container_name: cart-postgres
+    ports:
+      - "5436:5436"
+    volumes:
+      - ./postgresql.conf:/etc/postgresql/postgresql.conf
+      - ./volumes/postgres:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=cartdb
+      - POSTGRES_USER=cart_user
+      - POSTGRES_PASSWORD=12345
+    healthcheck:
+      test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
+      timeout: 5s
+      interval: 5s
+      retries: 10
+
+  db-init-cart:
+    image: postgres:16.1
+    container_name: db-init-cart
+    depends_on:
+      db-cart:
+        condition: service_healthy
+    entrypoint:
+      - bash
+      - -c
+      - |
+        set -e
+        psql postgresql://cart_user:12345@db-cart:5436/cartdb -v ON_ERROR_STOP=1 <<-EOSQL
+          CREATE TABLE IF NOT EXISTS carts (
+                      id varchar(100) PRIMARY KEY,
+                      username varchar(50) NOT NULL,
+                      active boolean NOT NULL
+          );
+        
+          CREATE TABLE IF NOT EXISTS products (
+                      cart_id varchar(100) REFERENCES Carts(id) ON DELETE CASCADE,
+                      product_id varchar(100) NOT NULL,
+                      quantity bigint NOT NULL,
+                      PRIMARY KEY(cart_id, product_id)
+          );
+        EOSQL

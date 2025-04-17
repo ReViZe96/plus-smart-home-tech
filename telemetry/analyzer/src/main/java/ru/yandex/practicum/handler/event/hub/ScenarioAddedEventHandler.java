@@ -29,8 +29,8 @@ public class ScenarioAddedEventHandler implements HubEventHandler {
         return ScenarioAddedEventAvro.class.getName();
     }
 
-    @Transactional
     @Override
+    @Transactional
     public void handle(HubEventAvro hubEvent) {
 
         ScenarioAddedEventAvro scenarioEvent = (ScenarioAddedEventAvro) hubEvent.getPayload();
