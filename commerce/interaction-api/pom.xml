@@ -33,7 +33,7 @@
             <artifactId>spring-cloud-starter-circuitbreaker-resilience4j</artifactId>
             <version>3.1.2</version>
         </dependency>
-
+        <!--Other-->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>

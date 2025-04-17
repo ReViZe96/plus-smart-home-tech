@@ -1,0 +1,42 @@
+application:
+  name: gateway
+
+spring:
+  cloud:
+    gateway:
+      # для работы Gateway должен использовать Discovery Service
+      discovery:
+        locator:
+          enabled: true
+      default-filters:
+#        - name: CircuitBreaker
+#          args:
+#            name: fallback-service
+#            fallbackUri: forward:/fallback
+#        - PrefixPath=/api/v1/
+      routes:
+        - id: shopping_cart
+          uri: lb://shopping-cart
+          predicates:
+            - Path=/shopping-cart/**
+          filters:
+            - PrefixPath=/api/v1/
+        - id: shopping-store
+          uri: lb://shopping-store
+          predicates:
+            - Path=/shopping-store/**
+          filters:
+            - PrefixPath=/api/v1/
+            - name: Retry
+              args:
+                # количество попыток отправки запроса
+                retries: 5
+                # коды состояния HTTP, при которых будут предприняты повторные попытки
+                statuses: NOT_FOUND
+                methods:
+                  - POST, GET
+                # типы Java-исключений, при возникновении которых будут сделаны повторные попытки
+                exceptions:  org.springframework.cloud.gateway.support.NotFoundException
+
+server:
+  port: 8080
