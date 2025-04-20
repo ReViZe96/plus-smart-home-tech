@@ -6,12 +6,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.dto.OrderDto;
 import ru.yandex.practicum.dto.PaymentDto;
+import ru.yandex.practicum.service.PaymentService;
 
 @RestController("/api/v1/payment")
 @RequiredArgsConstructor
 public class PaymentController {
 
-    //private final PaymentService paymentService;
+    private final PaymentService paymentService;
 
 
     /**
@@ -20,10 +21,9 @@ public class PaymentController {
      * @param order заказ для формирования оплаты
      * @return сформированная оплата заказа
      */
-    //если недостаточно информации в заказе для расчёта (400) - NotEnoughInfoInOrderToCalculateException
     @PostMapping("")
     public PaymentDto createNewPayment(@RequestBody(required = true) OrderDto order) {
-        return PaymentDto.builder().build();
+        return paymentService.createNewPayment(order);
     }
 
     /**
@@ -32,10 +32,9 @@ public class PaymentController {
      * @param order заказ для расчёта
      * @return стоимость товаров в заказе
      */
-    //если недостаточно информации в заказе для расчёта (400) - NotEnoughInfoInOrderToCalculateException
     @PostMapping("/productCost")
     public Double calculateProductsCostInOrder(@RequestBody(required = true) OrderDto order) {
-        return 0.0;
+        return paymentService.calculateProductsCostInOrder(order);
     }
 
     /**
@@ -45,10 +44,9 @@ public class PaymentController {
      * @param order заказ для расчёта
      * @return полная стоимость заказа
      */
-    //если недостаточно информации в заказе для расчёта (400) - NotEnoughInfoInOrderToCalculateException
     @PostMapping("/totalCost")
     public Double calculateOrderTotalCost(@RequestBody(required = true) OrderDto order) {
-        return 0.0;
+        return paymentService.calculateOrderTotalCost(order);
     }
 
     /**
@@ -64,11 +62,9 @@ public class PaymentController {
      * @param paymentId идентификатор платежа
      * @return сформированная оплата заказа
      */
-    //возвращаемый тип может быть boolean или void
-    //если не найден заказ (404) - NoOrderFoundException
     @PostMapping("/refund")
     public PaymentDto makePaymentSuccess(@RequestBody(required = true) String paymentId) {
-        return PaymentDto.builder().build();
+        return paymentService.makePaymentSuccess(paymentId);
     }
 
     /**
@@ -79,11 +75,9 @@ public class PaymentController {
      * @param paymentId идентификатор платежа
      * @return сформированная оплата заказа
      */
-    //возвращаемый тип может быть boolean или void
-    //если не найден заказ (404) - NoOrderFoundException
     @PostMapping("/failed")
     public PaymentDto makePaymentFailed(@RequestBody(required = true) String paymentId) {
-        return PaymentDto.builder().build();
+        return paymentService.makePaymentFailed(paymentId);
     }
 
 }

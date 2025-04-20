@@ -7,12 +7,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.dto.DeliveryDto;
 import ru.yandex.practicum.dto.OrderDto;
+import ru.yandex.practicum.service.DeliveryService;
 
 @RestController("/api/v1/delivery")
 @RequiredArgsConstructor
 public class DeliveryController {
 
-    //private final DeliveryService deliveryService;
+    private final DeliveryService deliveryService;
 
 
     /**
@@ -23,7 +24,7 @@ public class DeliveryController {
      */
     @PutMapping
     public DeliveryDto createNewDelivery(@RequestBody(required = true) DeliveryDto delivery) {
-        return DeliveryDto.builder().build();
+        return deliveryService.createNewDelivery(delivery);
     }
 
     /**
@@ -36,11 +37,9 @@ public class DeliveryController {
      *
      * @param deliveryId идентификатор доставки
      */
-    //возвращаемый тип может быть boolean или void
-    //в случае, если доставка не найдена (404) - NoDeliveryFoundException
     @PostMapping("/picked")
     public DeliveryDto makeDeliveryInProgress(@RequestBody(required = true) String deliveryId) {
-        return DeliveryDto.builder().build();
+        return deliveryService.makeDeliveryInProgress(deliveryId);
     }
 
     /**
@@ -51,11 +50,9 @@ public class DeliveryController {
      *
      * @param deliveryId идентификатор доставки
      */
-    //возвращаемый тип может быть boolean или void
-    //в случае, если доставка не найдена (404) - NoDeliveryFoundException
     @PostMapping("/successful")
     public DeliveryDto makeDeliverySuccess(@RequestBody(required = true) String deliveryId) {
-        return DeliveryDto.builder().build();
+        return deliveryService.makeDeliverySuccess(deliveryId);
     }
 
     /**
@@ -66,11 +63,9 @@ public class DeliveryController {
      *
      * @param deliveryId идентификатор доставки
      */
-    //возвращаемый тип может быть boolean или void
-    //в случае, если доставка не найдена (404) - NoDeliveryFoundException
     @PostMapping("/failed")
     public DeliveryDto makeDeliveryFailed(@RequestBody(required = true) String deliveryId) {
-        return DeliveryDto.builder().build();
+        return deliveryService.makeDeliveryFailed(deliveryId);
     }
 
     /**
@@ -80,10 +75,9 @@ public class DeliveryController {
      * @param order заказ для расчёта.
      * @return полная стоимость доставки заказа.
      */
-    //в случае, если доставка не найдена (404) - NoDeliveryFoundException
     @PostMapping("/cost")
     public Double calculateDeliveryCost(@RequestBody(required = true) OrderDto order) {
-        return 0.0;
+        return deliveryService.calculateDeliveryCost(order);
     }
 
 }

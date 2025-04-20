@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.dto.OrderDto;
 import ru.yandex.practicum.dto.request.CreateNewOrderRequest;
 import ru.yandex.practicum.dto.request.ProductReturnRequest;
+import ru.yandex.practicum.service.OrderService;
 
 import java.util.List;
 
@@ -13,7 +14,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class OrderController {
 
-    //private final OrderService orderService;
+    private final OrderService orderService;
 
 
     /**
@@ -22,11 +23,10 @@ public class OrderController {
      * @param username имя пользователя
      * @return список всех заказов пользователя в пагинированном виде
      */
-    //если пользователь не передан, либо не идентифицирован (401) - NotAuthorizedUserException
     @GetMapping
     public List<OrderDto> getUserOrders(@RequestParam(value = "username", required = true) String username,
                                         @RequestParam(value = "pageable") Pageable pageable) {
-        return List.of(OrderDto.builder().build());
+        return orderService.getUserOrders(username, pageable);
     }
 
     /**
@@ -34,10 +34,9 @@ public class OrderController {
      *
      * @param newOrderRequest запрос на создание заказа
      */
-    //если нет заказываемого товара на складе (400) - NoSpecifiedProductInWarehouseException
     @PutMapping
     public OrderDto createNewOrder(@RequestBody(required = true) CreateNewOrderRequest newOrderRequest) {
-        return OrderDto.builder().build();
+        return orderService.createNewOrder(newOrderRequest);
     }
 
     /**
@@ -46,11 +45,10 @@ public class OrderController {
      * @param productReturnRequest запрос на возврат заказа
      * @return заказ пользователя после сборки
      */
-    //если не найден заказ (400) - NoOrderFoundException
     @PostMapping("/return")
     public OrderDto returnOrder(@RequestParam(value = "productReturnRequest", required = true) ProductReturnRequest productReturnRequest,
                                 @RequestBody(required = true) ProductReturnRequest returnRequest) {
-        return OrderDto.builder().build();
+        return orderService.returnOrder(productReturnRequest, returnRequest);
     }
 
     /**
@@ -59,10 +57,9 @@ public class OrderController {
      * @param orderId идентификатор заказа
      * @return заказ пользователя после оплаты
      */
-    //если не найден заказ (400) - NoOrderFoundException
     @PostMapping("/payment")
     public OrderDto payOrder(@RequestBody(required = true) String orderId) {
-        return OrderDto.builder().build();
+        return orderService.payOrder(orderId);
     }
 
     /**
@@ -71,10 +68,9 @@ public class OrderController {
      * @param orderId идентификатор заказа
      * @return заказ пользователя после ошибки оплаты
      */
-    //если не найден заказ (400) - NoOrderFoundException
     @PostMapping("/payment/failed")
     public OrderDto payOrderFailed(@RequestBody(required = true) String orderId) {
-        return OrderDto.builder().build();
+        return orderService.payOrderFailed(orderId);
     }
 
     /**
@@ -83,10 +79,9 @@ public class OrderController {
      * @param orderId идентификатор заказа
      * @return заказ пользователя после сборки
      */
-    //если не найден заказ (400) - NoOrderFoundException
     @PostMapping("/assembly")
     public OrderDto assemblyOrder(@RequestBody(required = true) String orderId) {
-        return OrderDto.builder().build();
+        return orderService.assemblyOrder(orderId);
     }
 
     /**
@@ -95,10 +90,9 @@ public class OrderController {
      * @param orderId идентификатор заказа
      * @return заказ пользователя после ошибки сборки
      */
-    //если не найден заказ (400) - NoOrderFoundException
     @PostMapping("/assembly/failed")
     public OrderDto assemblyOrderFailed(@RequestBody(required = true) String orderId) {
-        return OrderDto.builder().build();
+        return orderService.assemblyOrderFailed(orderId);
     }
 
     /**
@@ -107,10 +101,9 @@ public class OrderController {
      * @param orderId идентификатор заказа
      * @return заказ пользователя после доставки
      */
-    //если не найден заказ (400) - NoOrderFoundException
     @PostMapping("/delivery")
     public OrderDto deliveryOrder(@RequestBody(required = true) String orderId) {
-        return OrderDto.builder().build();
+        return orderService.deliveryOrder(orderId);
     }
 
     /**
@@ -119,10 +112,9 @@ public class OrderController {
      * @param orderId идентификатор заказа
      * @return заказ пользователя после ошибки доставки
      */
-    //если не найден заказ (400) - NoOrderFoundException
     @PostMapping("/delivery/failed")
     public OrderDto deliveryOrderFailed(@RequestBody(required = true) String orderId) {
-        return OrderDto.builder().build();
+        return orderService.deliveryOrderFailed(orderId);
     }
 
     /**
@@ -131,10 +123,9 @@ public class OrderController {
      * @param orderId идентификатор заказа
      * @return завершенный заказ пользователя после всех стадий
      */
-    //если не найден заказ (400) - NoOrderFoundException
     @PostMapping("/completed")
     public OrderDto completeOrder(@RequestBody(required = true) String orderId) {
-        return OrderDto.builder().build();
+        return orderService.completeOrder(orderId);
     }
 
     /**
@@ -143,10 +134,9 @@ public class OrderController {
      * @param orderId идентификатор заказа
      * @return заказ пользователя с расчётом общей стоимости
      */
-    //если не найден заказ (400) - NoOrderFoundException
     @PostMapping("/calculate/total")
     public OrderDto calculateOrderTotalCost(@RequestBody(required = true) String orderId) {
-        return OrderDto.builder().build();
+        return orderService.calculateOrderTotalCost(orderId);
     }
 
     /**
@@ -155,10 +145,9 @@ public class OrderController {
      * @param orderId идентификатор заказа
      * @return заказ пользователя с расчётом стоимости доставки
      */
-    //если не найден заказ (400) - NoOrderFoundException
     @PostMapping("/calculate/delivery")
     public OrderDto calculateOrderDeliveryCost(@RequestBody(required = true) String orderId) {
-        return OrderDto.builder().build();
+        return orderService.calculateOrderDeliveryCost(orderId);
     }
 
 }
