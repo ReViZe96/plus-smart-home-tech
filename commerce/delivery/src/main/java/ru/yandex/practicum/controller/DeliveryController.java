@@ -1,6 +1,7 @@
 package ru.yandex.practicum.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,8 +24,8 @@ public class DeliveryController {
      * @return указанная заявка с присвоенным идентификатором
      */
     @PutMapping
-    public DeliveryDto createNewDelivery(@RequestBody(required = true) DeliveryDto delivery) {
-        return deliveryService.createNewDelivery(delivery);
+    public ResponseEntity<DeliveryDto> createNewDelivery(@RequestBody(required = true) DeliveryDto delivery) {
+        return ResponseEntity.ok(deliveryService.createNewDelivery(delivery));
     }
 
     /**
@@ -38,8 +39,8 @@ public class DeliveryController {
      * @param deliveryId идентификатор доставки
      */
     @PostMapping("/picked")
-    public DeliveryDto makeDeliveryInProgress(@RequestBody(required = true) String deliveryId) {
-        return deliveryService.makeDeliveryInProgress(deliveryId);
+    public ResponseEntity<DeliveryDto> makeDeliveryInProgress(@RequestBody(required = true) String deliveryId) {
+        return ResponseEntity.ok(deliveryService.makeDeliveryInProgress(deliveryId));
     }
 
     /**
@@ -51,8 +52,8 @@ public class DeliveryController {
      * @param deliveryId идентификатор доставки
      */
     @PostMapping("/successful")
-    public DeliveryDto makeDeliverySuccess(@RequestBody(required = true) String deliveryId) {
-        return deliveryService.makeDeliverySuccess(deliveryId);
+    public ResponseEntity<DeliveryDto> makeDeliverySuccess(@RequestBody(required = true) String deliveryId) {
+        return ResponseEntity.ok(deliveryService.makeDeliverySuccess(deliveryId));
     }
 
     /**
@@ -64,8 +65,8 @@ public class DeliveryController {
      * @param deliveryId идентификатор доставки
      */
     @PostMapping("/failed")
-    public DeliveryDto makeDeliveryFailed(@RequestBody(required = true) String deliveryId) {
-        return deliveryService.makeDeliveryFailed(deliveryId);
+    public ResponseEntity<DeliveryDto> makeDeliveryFailed(@RequestBody(required = true) String deliveryId) {
+        return ResponseEntity.ok(deliveryService.makeDeliveryFailed(deliveryId));
     }
 
     /**
@@ -76,8 +77,8 @@ public class DeliveryController {
      * @return полная стоимость доставки заказа.
      */
     @PostMapping("/cost")
-    public Double calculateDeliveryCost(@RequestBody(required = true) OrderDto order) {
-        return deliveryService.calculateDeliveryCost(order);
+    public ResponseEntity<Double> calculateDeliveryCost(@RequestBody(required = true) OrderDto order) {
+        return ResponseEntity.ok(deliveryService.calculateDeliveryCost(order));
     }
 
 }

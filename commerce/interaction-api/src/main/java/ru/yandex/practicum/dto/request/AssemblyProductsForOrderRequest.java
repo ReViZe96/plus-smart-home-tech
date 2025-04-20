@@ -5,13 +5,13 @@ import lombok.Data;
 
 import javax.validation.constraints.NotNull;
 import java.util.Map;
-import java.util.UUID;
 
 @Data
 @Builder
-public class ProductReturnRequest {
+public class AssemblyProductsForOrderRequest {
 
-    private UUID orderId;
+    @NotNull
+    private String orderId;
     @NotNull
     private Map<String, Integer> products;
 

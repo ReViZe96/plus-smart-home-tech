@@ -9,7 +9,11 @@ import ru.yandex.practicum.dto.AddressDto;
 import ru.yandex.practicum.dto.BookedProductsDto;
 import ru.yandex.practicum.dto.ShoppingCartDto;
 import ru.yandex.practicum.dto.request.AddProductToWarehouseRequest;
+import ru.yandex.practicum.dto.request.AssemblyProductsForOrderRequest;
 import ru.yandex.practicum.dto.request.NewProductInWarehouseRequest;
+import ru.yandex.practicum.dto.request.ShippedToDeliveryRequest;
+
+import java.util.Map;
 
 @Component
 @Slf4j
@@ -28,11 +32,33 @@ public class WarehouseClientFallback implements WarehouseClient {
     }
 
     @Override
+    public Boolean shippedProductsToDelivery(ShippedToDeliveryRequest shippedToDelivery) {
+        logger.warn(SERVICE_UNAVAILABLE + "невозможно передать товары в доставку {} со склада.",
+                shippedToDelivery.getDeliveryId());
+        return false;
+    }
+
+    @Override
+    public Boolean returnProductsToWarehouse(Map<String, Integer> returnedProducts) {
+        logger.warn(SERVICE_UNAVAILABLE + "невозможно принять возврат товаров на склад.");
+        return false;
+    }
+
+
+    @Override
     public BookedProductsDto checkProductAmountInWarehouse(ShoppingCartDto shoppingCart) {
         logger.warn(SERVICE_UNAVAILABLE + "невозможно проверить достаточно ли товара на складе для заказа из корзины {}.",
                 shoppingCart.getShoppingCartId());
         return BOOKING_STUB;
     }
+
+    @Override
+    public BookedProductsDto assemblyProductsForShipment(AssemblyProductsForOrderRequest assemblyProductsForShipment) {
+        logger.warn(SERVICE_UNAVAILABLE + "невозможно собрать товары к заказу {} для подготовки к отправке.",
+                assemblyProductsForShipment.getOrderId());
+        return BOOKING_STUB;
+    }
+
 
     @Override
     public void reviseProductToWarehouse(AddProductToWarehouseRequest addProductToWarehouse) {

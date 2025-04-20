@@ -1,6 +1,7 @@
 package ru.yandex.practicum.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,8 +23,8 @@ public class PaymentController {
      * @return сформированная оплата заказа
      */
     @PostMapping("")
-    public PaymentDto createNewPayment(@RequestBody(required = true) OrderDto order) {
-        return paymentService.createNewPayment(order);
+    public ResponseEntity<PaymentDto> createNewPayment(@RequestBody(required = true) OrderDto order) {
+        return ResponseEntity.ok(paymentService.createNewPayment(order));
     }
 
     /**
@@ -33,8 +34,8 @@ public class PaymentController {
      * @return стоимость товаров в заказе
      */
     @PostMapping("/productCost")
-    public Double calculateProductsCostInOrder(@RequestBody(required = true) OrderDto order) {
-        return paymentService.calculateProductsCostInOrder(order);
+    public ResponseEntity<Double> calculateProductsCostInOrder(@RequestBody(required = true) OrderDto order) {
+        return ResponseEntity.ok(paymentService.calculateProductsCostInOrder(order));
     }
 
     /**
@@ -45,8 +46,8 @@ public class PaymentController {
      * @return полная стоимость заказа
      */
     @PostMapping("/totalCost")
-    public Double calculateOrderTotalCost(@RequestBody(required = true) OrderDto order) {
-        return paymentService.calculateOrderTotalCost(order);
+    public ResponseEntity<Double> calculateOrderTotalCost(@RequestBody(required = true) OrderDto order) {
+        return ResponseEntity.ok(paymentService.calculateOrderTotalCost(order));
     }
 
     /**
@@ -63,8 +64,8 @@ public class PaymentController {
      * @return сформированная оплата заказа
      */
     @PostMapping("/refund")
-    public PaymentDto makePaymentSuccess(@RequestBody(required = true) String paymentId) {
-        return paymentService.makePaymentSuccess(paymentId);
+    public ResponseEntity<PaymentDto> makePaymentSuccess(@RequestBody(required = true) String paymentId) {
+        return ResponseEntity.ok(paymentService.makePaymentSuccess(paymentId));
     }
 
     /**
@@ -76,8 +77,8 @@ public class PaymentController {
      * @return сформированная оплата заказа
      */
     @PostMapping("/failed")
-    public PaymentDto makePaymentFailed(@RequestBody(required = true) String paymentId) {
-        return paymentService.makePaymentFailed(paymentId);
+    public ResponseEntity<PaymentDto> makePaymentFailed(@RequestBody(required = true) String paymentId) {
+        return ResponseEntity.ok(paymentService.makePaymentFailed(paymentId));
     }
 
 }

@@ -10,7 +10,9 @@ import ru.yandex.practicum.dto.AddressDto;
 import ru.yandex.practicum.dto.BookedProductsDto;
 import ru.yandex.practicum.dto.ShoppingCartDto;
 import ru.yandex.practicum.dto.request.AddProductToWarehouseRequest;
+import ru.yandex.practicum.dto.request.AssemblyProductsForOrderRequest;
 import ru.yandex.practicum.dto.request.NewProductInWarehouseRequest;
+import ru.yandex.practicum.dto.request.ShippedToDeliveryRequest;
 import ru.yandex.practicum.exception.NoSpecifiedProductInWarehouseException;
 import ru.yandex.practicum.exception.ProductInShoppingCartLowQuantityInWarehouse;
 import ru.yandex.practicum.exception.SpecifiedProductAlreadyInWarehouseException;
@@ -51,6 +53,52 @@ public class WarehouseServiceImpl implements WarehouseService {
         warehouseItemRepository.save(newItem);
     }
 
+    //TODO: this method
+
+    /**
+     * Передать товары в доставку.
+     * Метод должен обновить информацию о собранном заказе в базе данных склада:
+     * добавить в него идентификатор доставки, который вернул сервис доставки,
+     * присвоить идентификатор доставки во внутреннем хранилище собранных товаров заказа.
+     * Вызывается из сервиса доставки.
+     *
+     * @param shippedToDelivery запрос на передачу товаров в доставку
+     */
+    @Override
+    public Boolean shippedProductsToDelivery(ShippedToDeliveryRequest shippedToDelivery) {
+
+
+        /*
+    private String orderId;
+    private String deliveryId;
+         */
+        return true;
+    }
+
+    @Override
+    public Boolean returnProductsToWarehouse(Map<String, Integer> returnedProducts) {
+        int amountOfReturnedProducts = 0;
+        for (String productId : returnedProducts.keySet()) {
+            Optional<WarehouseItem> item = warehouseItemRepository.findById(productId);
+            if (item.isEmpty()) {
+                throw new NoSpecifiedProductInWarehouseException("Возвращаемый товар: " + productId +
+                        " отсутствует на складе");
+            }
+            WarehouseItem returningItem = item.get();
+            Integer returningAmount = returnedProducts.get(productId);
+            returningItem.setQuantity(returningItem.getQuantity() + returningAmount);
+            warehouseItemRepository.save(returningItem);
+            log.debug("Возвращено {} штук позиции {} на склад", returningAmount, returningItem.getId());
+            amountOfReturnedProducts++;
+        }
+        if (amountOfReturnedProducts == returnedProducts.size()) {
+            log.debug("Все позиции из запроса на возврат успешно возвращены на склад");
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     @Override
     public BookedProductsDto checkProductAmount(ShoppingCartDto shoppingCart) {
         Map<String, Integer> productsInCart = shoppingCart.getProducts();
@@ -69,6 +117,34 @@ public class WarehouseServiceImpl implements WarehouseService {
             productsInWarehouse.put(item.get(), productsInCart.get(productId));
         }
         return calculateDelivery(productsInWarehouse);
+    }
+
+    @Override
+    public BookedProductsDto assemblyProductsForShipment(AssemblyProductsForOrderRequest assemblyProductsForOrder) {
+        Map<String, Integer> assemblingProducts = assemblyProductsForOrder.getProducts();
+        Map<WarehouseItem, Integer> assembledProducts = new HashMap<>();
+        for (String productId : assemblingProducts.keySet()) {
+            Optional<WarehouseItem> item = warehouseItemRepository.findById(productId);
+            if (item.isEmpty()) {
+                throw new NoSpecifiedProductInWarehouseException("Товар " + productId + " из заказа: " +
+                        assemblyProductsForOrder.getOrderId() + " отсутствует на складе");
+            }
+            if (assemblingProducts.get(productId) > item.get().getQuantity()) {
+                throw new ProductInShoppingCartLowQuantityInWarehouse("Недостаточное количество товара " +
+                        productId + " на складе");
+            }
+            log.debug("Товары из заказа {} присутствуют на складе в требуемом количестве",
+                    assemblyProductsForOrder.getOrderId());
+            WarehouseItem assemblingItem = item.get();
+            Integer assemblingAmount = assemblingProducts.get(productId);
+
+            assembledProducts.put(assemblingItem, assemblingAmount);
+
+            assemblingItem.setQuantity(assemblingItem.getQuantity() - assemblingAmount);
+            warehouseItemRepository.save(assemblingItem);
+        }
+        return calculateDelivery(assembledProducts);
+
     }
 
     @Override
@@ -107,7 +183,7 @@ public class WarehouseServiceImpl implements WarehouseService {
     private BookedProductsDto calculateDelivery(Map<WarehouseItem, Integer> productsInWarehouse) {
         Double commonWeight = 0.0;
         Double commonVolume = 0.0;
-        log.debug("Старт вычисления параметров доставки товаров из корзины");
+        log.debug("Старт вычисления параметров доставки товаров");
         for (WarehouseItem item : productsInWarehouse.keySet()) {
             commonWeight += item.getWeight() * productsInWarehouse.get(item);
             Double currentVolume = item.getDepth() * item.getHeight() * item.getWidth() * productsInWarehouse.get(item);

@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS orders (
-                      id varchar(100) PRIMARY KEY,
+                      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                       cart_id varchar(100),
                       payment_id varchar(100),
                       delivery_id varchar(100),

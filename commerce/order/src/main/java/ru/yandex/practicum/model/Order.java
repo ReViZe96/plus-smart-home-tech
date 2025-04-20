@@ -7,6 +7,7 @@ import lombok.Setter;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 @Entity
 @Table(name = "orders")
@@ -16,8 +17,9 @@ import java.util.Map;
 public class Order {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id")
-    private String orderId;
+    private UUID orderId;
     @Column(name = "cart_id")
     private String shoppingCartId;
     @ElementCollection
