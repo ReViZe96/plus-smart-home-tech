@@ -1,0 +1,52 @@
+services:
+  db-order:
+    image: postgres:16.1
+    container_name: order-postgres
+    ports:
+      - "5436:5436"
+    volumes:
+      - ./postgresql.conf:/etc/postgresql/postgresql.conf
+      - ./volumes/postgres:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=orderdb
+      - POSTGRES_USER=order_user
+      - POSTGRES_PASSWORD=12345
+    healthcheck:
+      test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
+      timeout: 5s
+      interval: 5s
+      retries: 10
+
+  db-init-order:
+    image: postgres:16.1
+    container_name: db-init-order
+    depends_on:
+      db-order:
+        condition: service_healthy
+    entrypoint:
+      - bash
+      - -c
+      - |
+        set -e
+        psql postgresql://order_user:12345@db-order:5436/orderdb -v ON_ERROR_STOP=1 <<-EOSQL
+          CREATE TABLE IF NOT EXISTS orders (
+                      id varchar(100) PRIMARY KEY,
+                      cart_id varchar(100),
+                      payment_id varchar(100),
+                      delivery_id varchar(100),
+                      order_state varchar(32) NOT NULL,
+                      delivery_weight real,
+                      delivery_volume real,
+                      delivery_fragile boolean,
+                      total_price real,
+                      delivery_price real,
+                      product_price real
+          );
+  
+          CREATE TABLE IF NOT EXISTS products (
+                      order_id varchar(100) REFERENCES orders(id) ON DELETE CASCADE,
+                      product_id varchar(100) NOT NULL,
+                      product_quantity bigint NOT NULL,
+                      PRIMARY KEY(order_id, product_id)
+          );
+        EOSQL

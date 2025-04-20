@@ -1,0 +1,39 @@
+services:
+  db-delivery:
+    image: postgres:16.1
+    container_name: delivery-postgres
+    ports:
+      - "5435:5435"
+    volumes:
+      - ./postgresql.conf:/etc/postgresql/postgresql.conf
+      - ./volumes/postgres:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=deliverydb
+      - POSTGRES_USER=delivery_user
+      - POSTGRES_PASSWORD=12345
+    healthcheck:
+      test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
+      timeout: 5s
+      interval: 5s
+      retries: 10
+
+  db-init-delivery:
+    image: postgres:16.1
+    container_name: db-init-delivery
+    depends_on:
+      db-delivery:
+        condition: service_healthy
+    entrypoint:
+      - bash
+      - -c
+      - |
+        set -e
+        psql postgresql://delivery_user:12345@db-delivery:5435/deliverydb -v ON_ERROR_STOP=1 <<-EOSQL
+          CREATE TABLE IF NOT EXISTS deliveries (
+                      id varchar(100) PRIMARY KEY,
+                      from_warehouse_address varchar(512) NOT NULL,
+                      to_warehouse_address varchar(512) NOT NULL,
+                      order_id varchar(100) NOT NULL,
+                      state varchar(32) NOT NULL
+          );
+        EOSQL

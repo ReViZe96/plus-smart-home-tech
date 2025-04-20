@@ -3,7 +3,7 @@ services:
     image: postgres:16.1
     container_name: cart-postgres
     ports:
-      - "5436:5436"
+      - "5433:5433"
     volumes:
       - ./postgresql.conf:/etc/postgresql/postgresql.conf
       - ./volumes/postgres:/var/lib/postgresql/data/
@@ -28,7 +28,7 @@ services:
       - -c
       - |
         set -e
-        psql postgresql://cart_user:12345@db-cart:5436/cartdb -v ON_ERROR_STOP=1 <<-EOSQL
+        psql postgresql://cart_user:12345@db-cart:5433/cartdb -v ON_ERROR_STOP=1 <<-EOSQL
           CREATE TABLE IF NOT EXISTS carts (
                       id varchar(100) PRIMARY KEY,
                       username varchar(50) NOT NULL,

@@ -3,11 +3,11 @@ server:
 
 spring:
   application:
-    name: shopping-cart
+    name: order
   datasource:
     driverClassName: "org.postgresql.Driver"
-    url: "jdbc:postgresql://localhost:5433/cartdb"
-    username: "cart_user"
+    url: "jdbc:postgresql://localhost:5436/orderdb"
+    username: "order_user"
     password: "12345"
   jpa:
     hibernate:

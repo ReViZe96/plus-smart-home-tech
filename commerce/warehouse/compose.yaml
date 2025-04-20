@@ -3,7 +3,7 @@ services:
     image: postgres:16.1
     container_name: warehouse-postgres
     ports:
-      - "5440:5440"
+      - "5434:5434"
     volumes:
       - ./postgresql.conf:/etc/postgresql/postgresql.conf
       - ./volumes/postgres:/var/lib/postgresql/data/
@@ -28,7 +28,7 @@ services:
       - -c
       - |
         set -e
-        psql postgresql://warehouse_user:12345@db-warehouse:5440/warehousedb -v ON_ERROR_STOP=1 <<-EOSQL
+        psql postgresql://warehouse_user:12345@db-warehouse:5434/warehousedb -v ON_ERROR_STOP=1 <<-EOSQL
           CREATE TABLE IF NOT EXISTS items (
                       id varchar(100) PRIMARY KEY,
                       quantity_in_warehouse bigint,

@@ -6,7 +6,7 @@ spring:
     name: warehouse
   datasource:
     driverClassName: "org.postgresql.Driver"
-    url: "jdbc:postgresql://localhost:5440/warehousedb"
+    url: "jdbc:postgresql://localhost:5434/warehousedb"
     username: "warehouse_user"
     password: "12345"
   jpa:
