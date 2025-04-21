@@ -5,8 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.clients.OrderClient;
 import ru.yandex.practicum.clients.WarehouseClient;
-import ru.yandex.practicum.dto.AddressDto;
+
 import ru.yandex.practicum.dto.DeliveryDto;
 import ru.yandex.practicum.dto.OrderDto;
 import ru.yandex.practicum.dto.request.ShippedToDeliveryRequest;
@@ -17,7 +18,6 @@ import ru.yandex.practicum.model.DeliveryState;
 import ru.yandex.practicum.repository.DeliveryRepository;
 
 import javax.validation.ValidationException;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -31,6 +31,7 @@ public class DeliveryServiceImpl implements DeliveryService {
     private final DeliveryRepository deliveryRepository;
     private final DeliveryMapper deliveryMapper;
     private final WarehouseClient warehouseClient;
+    private final OrderClient orderClient;
 
 
     @Override
@@ -38,9 +39,9 @@ public class DeliveryServiceImpl implements DeliveryService {
         checkDelivery(addingDelivery);
         logger.debug("Старт создания новой доставки {}", addingDelivery.getDeliveryId());
         Delivery newDelivery = new Delivery();
-        String stringFromAddress = addressToString(addingDelivery.getFromAddress());
+        String stringFromAddress = deliveryMapper.addressDtoToaddress(addingDelivery.getFromAddress());
         newDelivery.setFromAddress(stringFromAddress);
-        String stringToAddress = addressToString(addingDelivery.getToAddress());
+        String stringToAddress = deliveryMapper.addressDtoToaddress(addingDelivery.getToAddress());
         newDelivery.setToAddress(stringToAddress);
         newDelivery.setOrderId(addingDelivery.getOrderId());
         newDelivery.setState(DeliveryState.CREATED);
@@ -76,13 +77,21 @@ public class DeliveryServiceImpl implements DeliveryService {
     @Override
     public DeliveryDto makeDeliverySuccess(String deliveryId) {
         Delivery successDelivery = isDeliveryPresent(deliveryId);
-        return setDeliveryStateAndSave(successDelivery, DeliveryState.DELIVERED);
+        DeliveryDto result = setDeliveryStateAndSave(successDelivery, DeliveryState.DELIVERED);
+        logger.debug("Старт изменения статуса заказа {}, связанного с доставкой {} на 'Успешно' - вызов внешнего сервиса",
+                result.getOrderId(), result.getDeliveryId());
+        orderClient.deliveryOrder(result.getOrderId());
+        return result;
     }
 
     @Override
     public DeliveryDto makeDeliveryFailed(String deliveryId) {
         Delivery failedDelivery = isDeliveryPresent(deliveryId);
-        return setDeliveryStateAndSave(failedDelivery, DeliveryState.FAILED);
+        DeliveryDto result = setDeliveryStateAndSave(failedDelivery, DeliveryState.FAILED);
+        logger.debug("Старт изменения статуса заказа {}, связанного с доставкой {} на 'Неудачно' - вызов внешнего сервиса",
+                result.getOrderId(), result.getDeliveryId());
+        orderClient.deliveryOrderFailed(result.getOrderId());
+        return result;
     }
 
     @Override
@@ -124,12 +133,6 @@ public class DeliveryServiceImpl implements DeliveryService {
             throw new ValidationException("Недостаточно данных для создания новой доставки с id = " +
                     delivery.getDeliveryId());
         }
-    }
-
-    private String addressToString(AddressDto address) {
-        String joiner = ",";
-        return String.join(joiner, List.of(address.getCountry(), address.getCity(), address.getStreet(),
-                address.getHouse(), address.getFlat()));
     }
 
     private Delivery isDeliveryPresent(String deliveryId) {

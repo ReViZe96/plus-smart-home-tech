@@ -10,9 +10,7 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.clients.DeliveryClient;
 import ru.yandex.practicum.clients.PaymentClient;
 import ru.yandex.practicum.clients.WarehouseClient;
-import ru.yandex.practicum.dto.BookedProductsDto;
-import ru.yandex.practicum.dto.OrderDto;
-import ru.yandex.practicum.dto.ShoppingCartDto;
+import ru.yandex.practicum.dto.*;
 import ru.yandex.practicum.dto.request.CreateNewOrderRequest;
 import ru.yandex.practicum.dto.request.ProductReturnRequest;
 import ru.yandex.practicum.exception.NoOrderFoundException;
@@ -54,9 +52,30 @@ public class OrderServiceImpl implements OrderService {
         logger.debug("Старт создания нового заказа по корзине {}", newCart.getShoppingCartId());
         Order simpleOrder = orderRepository.save(createSimpleOrder(newOrderRequest, bookedProducts));
         String simpleOrderId = simpleOrder.getOrderId().toString();
+
+        logger.debug("Старт создания доставки для нового заказа {}", simpleOrderId);
+        DeliveryDto simpleDelivery = DeliveryDto.builder()
+                .fromAddress(warehouseClient.getWarehouseAddress())
+                .toAddress(warehouseClient.getWarehouseAddress())
+                .orderId(simpleOrderId)
+                .build();
+        logger.debug("Создание доставки для заказа {} - вызов внешнего сервиса", simpleOrder);
+        DeliveryDto newDelivery = deliveryClient.createNewDelivery(simpleDelivery);
+        logger.debug("Старт подготовки доставки {} - вызов внешнего сервиса", newDelivery.getDeliveryId());
+        newDelivery = deliveryClient.makeDeliveryInProgress(newDelivery.getDeliveryId());
+        simpleOrder.setDeliveryWeight(newDelivery.getWeigh());
+        simpleOrder.setDeliveryVolume(newDelivery.getVolume());
+        simpleOrder.setFragile(newDelivery.getFragile());
+        orderRepository.save(simpleOrder);
         calculateOrderDeliveryCost(simpleOrderId);
         calculateOrderProductsCost(simpleOrderId);
-        return calculateOrderTotalCost(simpleOrderId);
+        OrderDto complexOrder = calculateOrderTotalCost(simpleOrderId);
+
+        logger.debug("Старт создания платежа для нового заказа {}", complexOrder.getOrderId());
+        PaymentDto orderPayment = paymentClient.createNewPayment(complexOrder);
+        complexOrder.setPaymentId(orderPayment.getPaymentId());
+        orderRepository.save(orderMapper.orderDtoToOrder(complexOrder));
+        return complexOrder;
     }
 
     @Override
@@ -168,10 +187,7 @@ public class OrderServiceImpl implements OrderService {
         Order result = new Order();
         result.setShoppingCartId(newOrderRequest.getShoppingCart().getShoppingCartId());
         result.setProducts(newOrderRequest.getShoppingCart().getProducts());
-        result.setState(OrderState.ON_PAYMENT);
-        result.setDeliveryWeight(bookedProducts.getDeliveryWeight());
-        result.setDeliveryVolume(bookedProducts.getDeliveryVolume());
-        result.setFragile(bookedProducts.getFragile());
+        result.setState(OrderState.NEW);
         return result;
     }
 

@@ -87,7 +87,10 @@ public class PaymentServiceImpl implements PaymentService {
         Payment successPayment = checkPayment(UUID.fromString(paymentId));
         PaymentDto successPaymentDto = setPaymentStatusAndSave(successPayment, PaymentStatus.SUCCESS);
         logger.debug("Статус платёжа {} изменён на 'Успешно'", paymentId);
-        setPaymentInfoInOrder(successPayment);
+        OrderDto successOrder = isOrderExist(successPayment);
+        logger.debug("Старт изменения статуса заказа {}, связанного  с платежом {} на 'Оплачено' - вызов внешнего сервиса",
+                successOrder.getOrderId(), paymentId);
+        orderClient.payOrder(successOrder.getOrderId());
         return successPaymentDto;
     }
 
@@ -96,7 +99,10 @@ public class PaymentServiceImpl implements PaymentService {
         Payment failedPayment = checkPayment(UUID.fromString(paymentId));
         PaymentDto failedPaymentDto = setPaymentStatusAndSave(failedPayment, PaymentStatus.FAILED);
         logger.debug("Статус платёжа {} изменён на 'Неудачно'", paymentId);
-        setPaymentInfoInOrder(failedPayment);
+        OrderDto failedOrder = isOrderExist(failedPayment);
+        logger.debug("Старт изменения статуса заказа {}, связанного  с платежом {} на 'Ошибка при оплате' - вызов внешнего сервиса",
+                failedOrder.getOrderId(), paymentId);
+        orderClient.payOrderFailed(failedOrder.getOrderId());
         return failedPaymentDto;
     }
 
@@ -118,14 +124,12 @@ public class PaymentServiceImpl implements PaymentService {
         return paymentMapper.paymentToPaymentDto(paymentRepository.save(payment));
     }
 
-    private void setPaymentInfoInOrder(Payment payment) {
+    private OrderDto isOrderExist(Payment payment) {
         OrderDto order = orderClient.getOrderByPaymentId(payment.getPaymentId().toString());
         if (order == null) {
             throw new NoOrderFoundException("Заказ, связанный с платежом " + payment.getPaymentId() + " не найден в системе");
         }
-        logger.debug("Старт изменения статуса заказа {}, связанного  с платежом {} - вызов внешнего сервиса",
-                order.getOrderId(), payment.getPaymentId());
-        orderClient.payOrder(order.getOrderId());
+        return order;
     }
 
 }
