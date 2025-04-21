@@ -2,8 +2,6 @@ package ru.yandex.practicum.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.clients.OrderClient;
 import ru.yandex.practicum.clients.WarehouseClient;
@@ -26,8 +24,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class DeliveryServiceImpl implements DeliveryService {
 
-    private static Logger logger = LoggerFactory.getLogger(DeliveryServiceImpl.class);
-
     private final DeliveryRepository deliveryRepository;
     private final DeliveryMapper deliveryMapper;
     private final WarehouseClient warehouseClient;
@@ -37,7 +33,7 @@ public class DeliveryServiceImpl implements DeliveryService {
     @Override
     public DeliveryDto createNewDelivery(DeliveryDto addingDelivery) {
         checkDelivery(addingDelivery);
-        logger.debug("Старт создания новой доставки {}", addingDelivery.getDeliveryId());
+        log.debug("Старт создания новой доставки {}", addingDelivery.getDeliveryId());
         Delivery newDelivery = new Delivery();
         String stringFromAddress = deliveryMapper.addressDtoToaddress(addingDelivery.getFromAddress());
         newDelivery.setFromAddress(stringFromAddress);
@@ -57,14 +53,14 @@ public class DeliveryServiceImpl implements DeliveryService {
         }
         Delivery deliveryInWork = delivery.get();
 
-        logger.debug("Старт формирования запроса к складу на передачу товаров заказа {} в рамках доставки {}",
+        log.debug("Старт формирования запроса к складу на передачу товаров заказа {} в рамках доставки {}",
                 deliveryInWork.getOrderId(), deliveryInWork.getId());
         ShippedToDeliveryRequest shippedToDeliveryRequest = ShippedToDeliveryRequest
                 .builder()
                 .orderId(deliveryInWork.getOrderId())
                 .deliveryId(deliveryInWork.getId())
                 .build();
-        logger.debug("Старт передачи товаров заказа {} в доставку {} - вызов внешнего сервиса",
+        log.debug("Старт передачи товаров заказа {} в доставку {} - вызов внешнего сервиса",
                 deliveryInWork.getOrderId(), deliveryInWork.getId());
         DeliveryDto assembledDelivery = warehouseClient.shippedProductsToDelivery(shippedToDeliveryRequest);
         deliveryInWork.setVolume(assembledDelivery.getVolume());
@@ -78,7 +74,7 @@ public class DeliveryServiceImpl implements DeliveryService {
     public DeliveryDto makeDeliverySuccess(String deliveryId) {
         Delivery successDelivery = isDeliveryPresent(deliveryId);
         DeliveryDto result = setDeliveryStateAndSave(successDelivery, DeliveryState.DELIVERED);
-        logger.debug("Старт изменения статуса заказа {}, связанного с доставкой {} на 'Успешно' - вызов внешнего сервиса",
+        log.debug("Старт изменения статуса заказа {}, связанного с доставкой {} на 'Успешно' - вызов внешнего сервиса",
                 result.getOrderId(), result.getDeliveryId());
         orderClient.deliveryOrder(result.getOrderId());
         return result;
@@ -88,7 +84,7 @@ public class DeliveryServiceImpl implements DeliveryService {
     public DeliveryDto makeDeliveryFailed(String deliveryId) {
         Delivery failedDelivery = isDeliveryPresent(deliveryId);
         DeliveryDto result = setDeliveryStateAndSave(failedDelivery, DeliveryState.FAILED);
-        logger.debug("Старт изменения статуса заказа {}, связанного с доставкой {} на 'Неудачно' - вызов внешнего сервиса",
+        log.debug("Старт изменения статуса заказа {}, связанного с доставкой {} на 'Неудачно' - вызов внешнего сервиса",
                 result.getOrderId(), result.getDeliveryId());
         orderClient.deliveryOrderFailed(result.getOrderId());
         return result;
@@ -108,17 +104,17 @@ public class DeliveryServiceImpl implements DeliveryService {
             baseCost += baseCost * 2;
         }
         if (delivery.getFragile()) {
-            logger.debug("Коэффициент 0.2 за доставку хрупокого товара");
+            log.debug("Коэффициент 0.2 за доставку хрупокого товара");
             baseCost += baseCost * 0.2;
         }
-        logger.debug("Коэффициент 0.3 для веса товара");
+        log.debug("Коэффициент 0.3 для веса товара");
         baseCost += delivery.getWeigh() * 0.3;
-        logger.debug("Коэффициент 0.2 для объема товара");
+        log.debug("Коэффициент 0.2 для объема товара");
         baseCost += delivery.getVolume() * 0.2;
         if (delivery.getToAddress().split(",")[2].equals(delivery.getFromAddress().split(",")[2])) {
             return baseCost;
         } else {
-            logger.debug("Коэффициент 0.2 для доставки за пределами одной и той же улицы.");
+            log.debug("Коэффициент 0.2 для доставки за пределами одной и той же улицы.");
             baseCost += baseCost * 0.2;
             return baseCost;
         }
@@ -144,7 +140,7 @@ public class DeliveryServiceImpl implements DeliveryService {
     }
 
     private DeliveryDto setDeliveryStateAndSave(Delivery delivery, DeliveryState state) {
-        logger.debug("Старт изменения статуса доставки {} на '{}'", delivery.getId(), state.toString());
+        log.debug("Старт изменения статуса доставки {} на '{}'", delivery.getId(), state.toString());
         delivery.setState(state);
         return deliveryMapper.deliveryToDeliveryDto(deliveryRepository.save(delivery));
     }

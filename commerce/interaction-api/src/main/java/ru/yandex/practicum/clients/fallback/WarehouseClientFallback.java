@@ -1,8 +1,6 @@
 package ru.yandex.practicum.clients.fallback;
 
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.clients.WarehouseClient;
 import ru.yandex.practicum.dto.AddressDto;
@@ -22,42 +20,40 @@ import static ru.yandex.practicum.clients.fallback.DeliveryClientFallback.DELIVE
 @Slf4j
 public class WarehouseClientFallback implements WarehouseClient {
 
-    private static Logger logger = LoggerFactory.getLogger(WarehouseClientFallback.class);
-
     private static final String SERVICE_UNAVAILABLE = "Сервис 'Склад' временно недоступен: ";
     private static final BookedProductsDto BOOKING_STUB = BookedProductsDto.builder().build();
     private static final AddressDto ADDRESS_STUB = AddressDto.builder().build();
 
     @Override
     public void createNewItemInWarehouse(NewProductInWarehouseRequest newProductInWarehouse) {
-        logger.warn(SERVICE_UNAVAILABLE + "невозможно добавить новую позицию {} на склад.",
+        log.warn(SERVICE_UNAVAILABLE + "невозможно добавить новую позицию {} на склад.",
                 newProductInWarehouse.getProductId());
     }
 
     @Override
     public DeliveryDto shippedProductsToDelivery(ShippedToDeliveryRequest shippedToDelivery) {
-        logger.warn(SERVICE_UNAVAILABLE + "невозможно передать товары в доставку {} со склада.",
+        log.warn(SERVICE_UNAVAILABLE + "невозможно передать товары в доставку {} со склада.",
                 shippedToDelivery.getDeliveryId());
         return DELIVERY_STUB;
     }
 
     @Override
     public Boolean returnProductsToWarehouse(Map<String, Integer> returnedProducts) {
-        logger.warn(SERVICE_UNAVAILABLE + "невозможно принять возврат товаров на склад.");
+        log.warn(SERVICE_UNAVAILABLE + "невозможно принять возврат товаров на склад.");
         return false;
     }
 
 
     @Override
     public BookedProductsDto checkProductAmountInWarehouse(ShoppingCartDto shoppingCart) {
-        logger.warn(SERVICE_UNAVAILABLE + "невозможно проверить достаточно ли товара на складе для заказа из корзины {}.",
+        log.warn(SERVICE_UNAVAILABLE + "невозможно проверить достаточно ли товара на складе для заказа из корзины {}.",
                 shoppingCart.getShoppingCartId());
         return BOOKING_STUB;
     }
 
     @Override
     public BookedProductsDto assemblyProductsForShipment(AssemblyProductsForOrderRequest assemblyProductsForShipment) {
-        logger.warn(SERVICE_UNAVAILABLE + "невозможно собрать товары к заказу {} для подготовки к отправке.",
+        log.warn(SERVICE_UNAVAILABLE + "невозможно собрать товары к заказу {} для подготовки к отправке.",
                 assemblyProductsForShipment.getOrderId());
         return BOOKING_STUB;
     }
@@ -65,18 +61,18 @@ public class WarehouseClientFallback implements WarehouseClient {
 
     @Override
     public void reviseProductToWarehouse(AddProductToWarehouseRequest addProductToWarehouse) {
-        logger.warn(SERVICE_UNAVAILABLE + "невозможно принять товар {} на склад.", addProductToWarehouse.getProductId());
+        log.warn(SERVICE_UNAVAILABLE + "невозможно принять товар {} на склад.", addProductToWarehouse.getProductId());
     }
 
     @Override
-    public AddressDto getWarehouseAddress() {
-        logger.warn(SERVICE_UNAVAILABLE + "невозможно предоставить адрес склада.");
+    public AddressDto getWarehouseAddress(String warehouseId) {
+        log.warn(SERVICE_UNAVAILABLE + "невозможно предоставить адрес склада по его идентификатору {}.", warehouseId);
         return ADDRESS_STUB;
     }
 
     @Override
     public AddressDto addWarehouseAddress(AddressDto addressDto) {
-        logger.warn(SERVICE_UNAVAILABLE + "невозможно добавить склад по новому адресу.");
+        log.warn(SERVICE_UNAVAILABLE + "невозможно добавить склад по новому адресу.");
         return ADDRESS_STUB;
     }
 

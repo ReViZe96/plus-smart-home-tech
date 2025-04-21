@@ -7,7 +7,5 @@ import ru.yandex.practicum.model.Action;
 @Repository
 public interface ActionRepository extends JpaRepository<Action, Long> {
 
-
-
 }
 

@@ -95,13 +95,14 @@ public class WarehouseController {
     }
 
     /**
-     * Предоставить адрес склада для расчёта доставки.
+     * Предоставить адрес склада по его идентификатору.
      *
+     * @param warehouseId идентификатор склада
      * @return Актуальный адрес склада
      */
-    @GetMapping("/address")
-    public ResponseEntity<AddressDto> getWarehouseAddress() {
-        return ResponseEntity.ok(warehouseService.getWarehouseAddress());
+    @GetMapping("/address/byId/{warehouseId}")
+    public ResponseEntity<AddressDto> getWarehouseAddress(@PathVariable(name = "warehouseId", required = true) String warehouseId) {
+        return ResponseEntity.ok(warehouseService.getWarehouseById(warehouseId));
     }
 
     /**

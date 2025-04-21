@@ -8,12 +8,6 @@ spring:
       discovery:
         locator:
           enabled: true
-      default-filters:
-#        - name: CircuitBreaker
-#          args:
-#            name: fallback-service
-#            fallbackUri: forward:/fallback
-#        - PrefixPath=/api/v1/
       routes:
         - id: shopping_cart
           uri: lb://shopping-cart

@@ -19,3 +19,9 @@ spring:
   sql:
     init:
       mode: always
+
+order:
+  default:
+    warehouse:
+      from: "1"
+      to: "2"

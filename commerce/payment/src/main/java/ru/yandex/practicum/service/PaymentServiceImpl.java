@@ -2,8 +2,6 @@ package ru.yandex.practicum.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.clients.OrderClient;
 import ru.yandex.practicum.clients.ShoppingStoreClient;
@@ -25,8 +23,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class PaymentServiceImpl implements PaymentService {
 
-    private static Logger logger = LoggerFactory.getLogger(PaymentServiceImpl.class);
-
     private final PaymentRepository paymentRepository;
     private final PaymentMapper paymentMapper;
     private final OrderClient orderClient;
@@ -42,7 +38,7 @@ public class PaymentServiceImpl implements PaymentService {
             throw new NotEnoughInfoInOrderToCalculateException("В заказе " + addedOrder.getOrderId() +
                     " недостаточно информации для расчёта и сохранения платежа");
         }
-        logger.debug("Старт создания платежа по заказу {}", addedOrder.getOrderId());
+        log.debug("Старт создания платежа по заказу {}", addedOrder.getOrderId());
         Payment newPayment = new Payment();
         newPayment.setProductTotal(productCost);
         newPayment.setDeliveryTotal(deliveryCost);
@@ -61,10 +57,10 @@ public class PaymentServiceImpl implements PaymentService {
         }
         double productsCost = 0.0;
         for (String productId : products.keySet()) {
-            logger.debug("Запрос информации о товаре {} - вызов внешнего сервиса", productId);
+            log.debug("Запрос информации о товаре {} - вызов внешнего сервиса", productId);
             productsCost += storeClient.getProductById(productId).getPrice() * products.get(productId);
         }
-        logger.debug("Общая стоимость товаров в заказе {} расчитана и равна {}", order.getOrderId(), productsCost);
+        log.debug("Общая стоимость товаров в заказе {} расчитана и равна {}", order.getOrderId(), productsCost);
         return productsCost;
     }
 
@@ -78,7 +74,7 @@ public class PaymentServiceImpl implements PaymentService {
                     " недостаточно информации для расчёта его стоимости");
         }
         fee = calculateOrderFee(productCost);
-        logger.debug("Старт расчёта полной стоимости заказа {}", order.getOrderId());
+        log.debug("Старт расчёта полной стоимости заказа {}", order.getOrderId());
         return productCost + fee + deliveryCost;
     }
 
@@ -86,9 +82,9 @@ public class PaymentServiceImpl implements PaymentService {
     public PaymentDto makePaymentSuccess(String paymentId) {
         Payment successPayment = checkPayment(UUID.fromString(paymentId));
         PaymentDto successPaymentDto = setPaymentStatusAndSave(successPayment, PaymentStatus.SUCCESS);
-        logger.debug("Статус платёжа {} изменён на 'Успешно'", paymentId);
+        log.debug("Статус платёжа {} изменён на 'Успешно'", paymentId);
         OrderDto successOrder = isOrderExist(successPayment);
-        logger.debug("Старт изменения статуса заказа {}, связанного  с платежом {} на 'Оплачено' - вызов внешнего сервиса",
+        log.debug("Старт изменения статуса заказа {}, связанного  с платежом {} на 'Оплачено' - вызов внешнего сервиса",
                 successOrder.getOrderId(), paymentId);
         orderClient.payOrder(successOrder.getOrderId());
         return successPaymentDto;
@@ -98,9 +94,9 @@ public class PaymentServiceImpl implements PaymentService {
     public PaymentDto makePaymentFailed(String paymentId) {
         Payment failedPayment = checkPayment(UUID.fromString(paymentId));
         PaymentDto failedPaymentDto = setPaymentStatusAndSave(failedPayment, PaymentStatus.FAILED);
-        logger.debug("Статус платёжа {} изменён на 'Неудачно'", paymentId);
+        log.debug("Статус платёжа {} изменён на 'Неудачно'", paymentId);
         OrderDto failedOrder = isOrderExist(failedPayment);
-        logger.debug("Старт изменения статуса заказа {}, связанного  с платежом {} на 'Ошибка при оплате' - вызов внешнего сервиса",
+        log.debug("Старт изменения статуса заказа {}, связанного  с платежом {} на 'Ошибка при оплате' - вызов внешнего сервиса",
                 failedOrder.getOrderId(), paymentId);
         orderClient.payOrderFailed(failedOrder.getOrderId());
         return failedPaymentDto;

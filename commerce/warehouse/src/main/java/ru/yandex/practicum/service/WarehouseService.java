@@ -25,7 +25,7 @@ public interface WarehouseService {
 
     void addProduct(AddProductToWarehouseRequest addProductToWarehouse);
 
-    AddressDto getWarehouseAddress();
+    AddressDto getWarehouseById(String warehouseId);
 
     AddressDto addWarehouse(AddressDto newAddress);
 

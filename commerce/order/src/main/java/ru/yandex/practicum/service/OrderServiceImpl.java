@@ -2,8 +2,7 @@ package ru.yandex.practicum.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -29,7 +28,11 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class OrderServiceImpl implements OrderService {
 
-    private static Logger logger = LoggerFactory.getLogger(OrderServiceImpl.class);
+    @Value("{order.default.warehouse.from}")
+    private final String warehouseFromId;
+
+    @Value("{order.default.warehouse.to}")
+    private final String warehouseToId;
 
     private final OrderRepository orderRepository;
     private final OrderMapper orderMapper;
@@ -47,21 +50,21 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderDto createNewOrder(CreateNewOrderRequest newOrderRequest) {
         ShoppingCartDto newCart = newOrderRequest.getShoppingCart();
-        logger.debug("Проверка наличия добавляемого в корзину товара в нужном количестве на складе - вызов внешнего сервиса");
+        log.debug("Проверка наличия добавляемого в корзину товара в нужном количестве на складе - вызов внешнего сервиса");
         BookedProductsDto bookedProducts = warehouseClient.checkProductAmountInWarehouse(newCart);
-        logger.debug("Старт создания нового заказа по корзине {}", newCart.getShoppingCartId());
+        log.debug("Старт создания нового заказа по корзине {}", newCart.getShoppingCartId());
         Order simpleOrder = orderRepository.save(createSimpleOrder(newOrderRequest, bookedProducts));
         String simpleOrderId = simpleOrder.getOrderId().toString();
 
-        logger.debug("Старт создания доставки для нового заказа {}", simpleOrderId);
+        log.debug("Старт создания доставки для нового заказа {}", simpleOrderId);
         DeliveryDto simpleDelivery = DeliveryDto.builder()
-                .fromAddress(warehouseClient.getWarehouseAddress())
-                .toAddress(warehouseClient.getWarehouseAddress())
+                .fromAddress(warehouseClient.getWarehouseAddress(warehouseFromId))
+                .toAddress(warehouseClient.getWarehouseAddress(warehouseToId))
                 .orderId(simpleOrderId)
                 .build();
-        logger.debug("Создание доставки для заказа {} - вызов внешнего сервиса", simpleOrder);
+        log.debug("Создание доставки для заказа {} - вызов внешнего сервиса", simpleOrder);
         DeliveryDto newDelivery = deliveryClient.createNewDelivery(simpleDelivery);
-        logger.debug("Старт подготовки доставки {} - вызов внешнего сервиса", newDelivery.getDeliveryId());
+        log.debug("Старт подготовки доставки {} - вызов внешнего сервиса", newDelivery.getDeliveryId());
         newDelivery = deliveryClient.makeDeliveryInProgress(newDelivery.getDeliveryId());
         simpleOrder.setDeliveryWeight(newDelivery.getWeigh());
         simpleOrder.setDeliveryVolume(newDelivery.getVolume());
@@ -71,7 +74,7 @@ public class OrderServiceImpl implements OrderService {
         calculateOrderProductsCost(simpleOrderId);
         OrderDto complexOrder = calculateOrderTotalCost(simpleOrderId);
 
-        logger.debug("Старт создания платежа для нового заказа {}", complexOrder.getOrderId());
+        log.debug("Старт создания платежа для нового заказа {}", complexOrder.getOrderId());
         PaymentDto orderPayment = paymentClient.createNewPayment(complexOrder);
         complexOrder.setPaymentId(orderPayment.getPaymentId());
         orderRepository.save(orderMapper.orderDtoToOrder(complexOrder));
@@ -82,7 +85,7 @@ public class OrderServiceImpl implements OrderService {
     public OrderDto returnOrder(ProductReturnRequest productReturnRequest, ProductReturnRequest returnRequest) {
         boolean isAllReturned = warehouseClient.returnProductsToWarehouse(returnRequest.getProducts());
         if (!isAllReturned) {
-            logger.warn("На склад возвращены не все товары из заявки на возврат");
+            log.warn("На склад возвращены не все товары из заявки на возврат");
         }
         Order returningOrder = checkOrder(returnRequest.getOrderId());
         returningOrder.setState(OrderState.PRODUCT_RETURNED);
@@ -134,7 +137,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderDto calculateOrderTotalCost(String orderId) {
         Order order = checkOrder(UUID.fromString(orderId));
-        logger.debug("Расчёт общей стоимости заказа {} - вызов внешнего сервиса", orderId);
+        log.debug("Расчёт общей стоимости заказа {} - вызов внешнего сервиса", orderId);
         Double totalPrice = paymentClient.calculateOrderTotalCost(orderMapper.orderToOrderDto(order));
         order.setTotalPrice(totalPrice);
         return orderMapper.orderToOrderDto(orderRepository.save(order));
@@ -143,7 +146,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderDto calculateOrderDeliveryCost(String orderId) {
         Order order = checkOrder(UUID.fromString(orderId));
-        logger.debug("Расчёт стоимости доставки заказа {} - вызов внешнего сервиса", orderId);
+        log.debug("Расчёт стоимости доставки заказа {} - вызов внешнего сервиса", orderId);
         Double deliveryPrice = deliveryClient.calculateDeliveryCost(orderMapper.orderToOrderDto(order));
         order.setDeliveryPrice(deliveryPrice);
         return orderMapper.orderToOrderDto(orderRepository.save(order));
@@ -151,8 +154,8 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderDto getByPaymentId(String paymentId) {
-        logger.debug("Старт поиска заказа по связанному с ним платежу {}", paymentId);
-        return orderMapper.orderToOrderDto(orderRepository.findByPaymentId(paymentId));
+        log.debug("Старт поиска заказа по связанному с ним платежу {}", paymentId);
+        return orderMapper.orderToOrderDto(orderRepository.findByPaymentId(paymentId).get());
     }
 
     @Override
@@ -163,7 +166,7 @@ public class OrderServiceImpl implements OrderService {
 
     private OrderDto calculateOrderProductsCost(String orderId) {
         Order order = checkOrder(UUID.fromString(orderId));
-        logger.debug("Расчёт стоимости товаров в заказе {} - вызов внешнего сервиса", order.getOrderId());
+        log.debug("Расчёт стоимости товаров в заказе {} - вызов внешнего сервиса", order.getOrderId());
         Double productPrice = paymentClient.calculateProductsCostInOrder(orderMapper.orderToOrderDto(order));
         order.setProductPrice(productPrice);
         return orderMapper.orderToOrderDto(orderRepository.save(order));
@@ -192,7 +195,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     private OrderDto setOrderStateAndSave(Order order, OrderState state) {
-        logger.debug("Старт изменения статуса заказа {} на '{}'", order.getOrderId(), state.toString());
+        log.debug("Старт изменения статуса заказа {} на '{}'", order.getOrderId(), state.toString());
         order.setState(state);
         return orderMapper.orderToOrderDto(orderRepository.save(order));
     }
