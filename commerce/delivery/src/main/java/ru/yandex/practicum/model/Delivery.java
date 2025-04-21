@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.UUID;
+
 @Entity
 @Table(name = "deliveries")
 @Getter
@@ -13,8 +15,9 @@ import lombok.Setter;
 public class Delivery {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id")
-    private String deliveryId;
+    private UUID id;
     @Column(name = "from_warehouse_address", nullable = false)
     private String fromAddress;
     @Column(name = "to_warehouse_address", nullable = false)
@@ -23,6 +26,12 @@ public class Delivery {
     private String orderId;
     @Column(name = "state", nullable = false)
     @Enumerated(EnumType.STRING)
-    private DeliveryState deliveryState;
+    private DeliveryState state;
+    @Column(name = "volume")
+    private Double volume;
+    @Column(name = "weigh")
+    private Double weigh;
+    @Column(name = "is_fragile")
+    private Boolean fragile;
 
 }

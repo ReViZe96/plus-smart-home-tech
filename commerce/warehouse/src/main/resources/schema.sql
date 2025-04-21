@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS items (
 );
 
 CREATE TABLE IF NOT EXISTS warehouses (
-                      id VARCHAR(100) PRIMARY KEY,
+                      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                       address_city VARCHAR(64),
                       address_street VARCHAR(128),
                       address_house VARCHAR(4),

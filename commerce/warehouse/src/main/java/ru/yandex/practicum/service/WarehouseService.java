@@ -2,6 +2,7 @@ package ru.yandex.practicum.service;
 
 import ru.yandex.practicum.dto.AddressDto;
 import ru.yandex.practicum.dto.BookedProductsDto;
+import ru.yandex.practicum.dto.DeliveryDto;
 import ru.yandex.practicum.dto.ShoppingCartDto;
 import ru.yandex.practicum.dto.request.AddProductToWarehouseRequest;
 import ru.yandex.practicum.dto.request.AssemblyProductsForOrderRequest;
@@ -14,7 +15,7 @@ public interface WarehouseService {
 
     void createNewItem(NewProductInWarehouseRequest newProductInWarehouse);
 
-    Boolean shippedProductsToDelivery(ShippedToDeliveryRequest shippedToDelivery);
+    DeliveryDto shippedProductsToDelivery(ShippedToDeliveryRequest shippedToDelivery);
 
     Boolean returnProductsToWarehouse(Map<String, Integer> returnedProducts);
 
@@ -25,5 +26,7 @@ public interface WarehouseService {
     void addProduct(AddProductToWarehouseRequest addProductToWarehouse);
 
     AddressDto getWarehouseAddress();
+
+    AddressDto addWarehouse(AddressDto newAddress);
 
 }

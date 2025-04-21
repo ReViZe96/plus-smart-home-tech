@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import ru.yandex.practicum.clients.fallback.WarehouseClientFallback;
+import ru.yandex.practicum.dto.DeliveryDto;
 import ru.yandex.practicum.dto.request.AddProductToWarehouseRequest;
 import ru.yandex.practicum.dto.AddressDto;
 import ru.yandex.practicum.dto.BookedProductsDto;
@@ -37,7 +38,7 @@ public interface WarehouseClient {
      * @param shippedToDelivery запрос на передачу товаров в доставку
      */
     @PostMapping("/api/v1/warehouse/shipped")
-    Boolean shippedProductsToDelivery(@RequestBody(required = true) ShippedToDeliveryRequest shippedToDelivery);
+    DeliveryDto shippedProductsToDelivery(@RequestBody(required = true) ShippedToDeliveryRequest shippedToDelivery);
 
     /**
      * Принять возврат товаров на склад.
@@ -85,5 +86,14 @@ public interface WarehouseClient {
      */
     @GetMapping("/api/v1/warehouse/address")
     AddressDto getWarehouseAddress();
+
+    /**
+     * Добавить новый склад в систему.
+     *
+     * @param addressDto адрес нового склада
+     * @return новый адрес склада
+     */
+    @PostMapping("/api/v1/warehouse/address")
+    AddressDto addWarehouseAddress(AddressDto addressDto);
 
 }

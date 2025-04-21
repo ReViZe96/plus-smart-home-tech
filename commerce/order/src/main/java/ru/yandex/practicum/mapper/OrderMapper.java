@@ -9,6 +9,4 @@ public interface OrderMapper {
 
     OrderDto orderToOrderDto(Order order);
 
-
-
 }

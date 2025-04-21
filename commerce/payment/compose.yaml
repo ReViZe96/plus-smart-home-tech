@@ -30,7 +30,7 @@ services:
         set -e
         psql postgresql://payment_user:12345@db-payment:5437/paymentdb -v ON_ERROR_STOP=1 <<-EOSQL
           CREATE TABLE IF NOT EXISTS payments (
-                      id varchar(100) PRIMARY KEY,
+                      id serial PRIMARY KEY,
                       total_cost real,
                       product_cost real,
                       delivery_cost real,

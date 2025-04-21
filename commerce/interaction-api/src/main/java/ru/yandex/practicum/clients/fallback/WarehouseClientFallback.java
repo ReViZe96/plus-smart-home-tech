@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.clients.WarehouseClient;
 import ru.yandex.practicum.dto.AddressDto;
 import ru.yandex.practicum.dto.BookedProductsDto;
+import ru.yandex.practicum.dto.DeliveryDto;
 import ru.yandex.practicum.dto.ShoppingCartDto;
 import ru.yandex.practicum.dto.request.AddProductToWarehouseRequest;
 import ru.yandex.practicum.dto.request.AssemblyProductsForOrderRequest;
@@ -14,6 +15,8 @@ import ru.yandex.practicum.dto.request.NewProductInWarehouseRequest;
 import ru.yandex.practicum.dto.request.ShippedToDeliveryRequest;
 
 import java.util.Map;
+
+import static ru.yandex.practicum.clients.fallback.DeliveryClientFallback.DELIVERY_STUB;
 
 @Component
 @Slf4j
@@ -32,10 +35,10 @@ public class WarehouseClientFallback implements WarehouseClient {
     }
 
     @Override
-    public Boolean shippedProductsToDelivery(ShippedToDeliveryRequest shippedToDelivery) {
+    public DeliveryDto shippedProductsToDelivery(ShippedToDeliveryRequest shippedToDelivery) {
         logger.warn(SERVICE_UNAVAILABLE + "невозможно передать товары в доставку {} со склада.",
                 shippedToDelivery.getDeliveryId());
-        return false;
+        return DELIVERY_STUB;
     }
 
     @Override
@@ -68,6 +71,12 @@ public class WarehouseClientFallback implements WarehouseClient {
     @Override
     public AddressDto getWarehouseAddress() {
         logger.warn(SERVICE_UNAVAILABLE + "невозможно предоставить адрес склада.");
+        return ADDRESS_STUB;
+    }
+
+    @Override
+    public AddressDto addWarehouseAddress(AddressDto addressDto) {
+        logger.warn(SERVICE_UNAVAILABLE + "невозможно добавить склад по новому адресу.");
         return ADDRESS_STUB;
     }
 

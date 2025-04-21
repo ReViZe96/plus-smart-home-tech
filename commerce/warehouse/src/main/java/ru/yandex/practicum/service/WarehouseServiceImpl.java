@@ -6,9 +6,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.yandex.practicum.dto.AddressDto;
-import ru.yandex.practicum.dto.BookedProductsDto;
-import ru.yandex.practicum.dto.ShoppingCartDto;
+import ru.yandex.practicum.clients.OrderClient;
+import ru.yandex.practicum.dto.*;
 import ru.yandex.practicum.dto.request.AddProductToWarehouseRequest;
 import ru.yandex.practicum.dto.request.AssemblyProductsForOrderRequest;
 import ru.yandex.practicum.dto.request.NewProductInWarehouseRequest;
@@ -22,6 +21,7 @@ import ru.yandex.practicum.model.WarehouseItem;
 import ru.yandex.practicum.repository.WarehouseItemRepository;
 import ru.yandex.practicum.repository.WarehouseRepository;
 
+import javax.validation.ValidationException;
 import java.security.SecureRandom;
 import java.util.*;
 
@@ -32,12 +32,13 @@ public class WarehouseServiceImpl implements WarehouseService {
 
     private static Logger logger = LoggerFactory.getLogger(WarehouseServiceImpl.class);
 
-    //заглушка
-    private Warehouse warehouse = addNewWarehouse(initAddressDto());
+    public static final String ADDRESS_1 = "ADDRESS_1";
+    public static final String ADDRESS_2 = "ADDRESS_2";
 
     private final WarehouseItemRepository warehouseItemRepository;
     private final WarehouseRepository warehouseRepository;
     private final WarehouseMapper warehouseMapper;
+    private final OrderClient orderClient;
 
 
     @Override
@@ -47,32 +48,31 @@ public class WarehouseServiceImpl implements WarehouseService {
                     newProductInWarehouse.getProductId() +
                     " уже имеется на складе");
         }
-        log.debug("Старт сохранения информации о новой товарной позиции {} на складе", newProductInWarehouse.getProductId());
+        logger.debug("Старт сохранения информации о новой товарной позиции {} на складе", newProductInWarehouse.getProductId());
         WarehouseItem newItem = warehouseMapper.newProductRequestToWarehouseItem(newProductInWarehouse);
         newItem.setQuantity(0);
         warehouseItemRepository.save(newItem);
     }
 
-    //TODO: this method
-
-    /**
-     * Передать товары в доставку.
-     * Метод должен обновить информацию о собранном заказе в базе данных склада:
-     * добавить в него идентификатор доставки, который вернул сервис доставки,
-     * присвоить идентификатор доставки во внутреннем хранилище собранных товаров заказа.
-     * Вызывается из сервиса доставки.
-     *
-     * @param shippedToDelivery запрос на передачу товаров в доставку
-     */
     @Override
-    public Boolean shippedProductsToDelivery(ShippedToDeliveryRequest shippedToDelivery) {
-
-
-        /*
-    private String orderId;
-    private String deliveryId;
-         */
-        return true;
+    public DeliveryDto shippedProductsToDelivery(ShippedToDeliveryRequest shippedToDelivery) {
+        logger.debug("Старт поиска заказа {}, передаваемого в доставку ", shippedToDelivery.getOrderId());
+        OrderDto shippedOrder = orderClient.getOrderById(shippedToDelivery.getOrderId());
+        logger.debug("Старт сбора товаров для заказа {}", shippedOrder.getOrderId());
+        AssemblyProductsForOrderRequest assemblyProductsForOrder = AssemblyProductsForOrderRequest
+                .builder()
+                .orderId(shippedOrder.getOrderId())
+                .products(shippedOrder.getProducts())
+                .build();
+        BookedProductsDto bookedProducts = assemblyProductsForShipment(assemblyProductsForOrder);
+        logger.debug("Заказ {} для передачи в доставку собран и перепроверен", shippedOrder.getOrderId());
+        return DeliveryDto.builder()
+                .deliveryId(String.valueOf(shippedToDelivery.getDeliveryId()))
+                .orderId(shippedToDelivery.getOrderId())
+                .volume(bookedProducts.getDeliveryVolume())
+                .weigh(bookedProducts.getDeliveryWeight())
+                .fragile(bookedProducts.getFragile())
+                .build();
     }
 
     @Override
@@ -88,11 +88,11 @@ public class WarehouseServiceImpl implements WarehouseService {
             Integer returningAmount = returnedProducts.get(productId);
             returningItem.setQuantity(returningItem.getQuantity() + returningAmount);
             warehouseItemRepository.save(returningItem);
-            log.debug("Возвращено {} штук позиции {} на склад", returningAmount, returningItem.getId());
+            logger.debug("Возвращено {} штук позиции {} на склад", returningAmount, returningItem.getId());
             amountOfReturnedProducts++;
         }
         if (amountOfReturnedProducts == returnedProducts.size()) {
-            log.debug("Все позиции из запроса на возврат успешно возвращены на склад");
+            logger.debug("Все позиции из запроса на возврат успешно возвращены на склад");
             return true;
         } else {
             return false;
@@ -113,7 +113,7 @@ public class WarehouseServiceImpl implements WarehouseService {
                 throw new ProductInShoppingCartLowQuantityInWarehouse("Недостаточное количество товара " +
                         productId + " на складе");
             }
-            log.debug("Товары из корзины присутствуют на складе в требуемом количестве");
+            logger.debug("Товары из корзины присутствуют на складе в требуемом количестве");
             productsInWarehouse.put(item.get(), productsInCart.get(productId));
         }
         return calculateDelivery(productsInWarehouse);
@@ -123,6 +123,7 @@ public class WarehouseServiceImpl implements WarehouseService {
     public BookedProductsDto assemblyProductsForShipment(AssemblyProductsForOrderRequest assemblyProductsForOrder) {
         Map<String, Integer> assemblingProducts = assemblyProductsForOrder.getProducts();
         Map<WarehouseItem, Integer> assembledProducts = new HashMap<>();
+        BookedProductsDto bookedProducts = null;
         for (String productId : assemblingProducts.keySet()) {
             Optional<WarehouseItem> item = warehouseItemRepository.findById(productId);
             if (item.isEmpty()) {
@@ -133,7 +134,7 @@ public class WarehouseServiceImpl implements WarehouseService {
                 throw new ProductInShoppingCartLowQuantityInWarehouse("Недостаточное количество товара " +
                         productId + " на складе");
             }
-            log.debug("Товары из заказа {} присутствуют на складе в требуемом количестве",
+            logger.debug("Товары из заказа {} присутствуют на складе в требуемом количестве",
                     assemblyProductsForOrder.getOrderId());
             WarehouseItem assemblingItem = item.get();
             Integer assemblingAmount = assemblingProducts.get(productId);
@@ -142,8 +143,12 @@ public class WarehouseServiceImpl implements WarehouseService {
 
             assemblingItem.setQuantity(assemblingItem.getQuantity() - assemblingAmount);
             warehouseItemRepository.save(assemblingItem);
+            bookedProducts = calculateDelivery(assembledProducts);
+            logger.debug("Старт изменения статуса заказа {}, собранного на складе - вызов внешнего сервиса",
+                    assemblyProductsForOrder.getOrderId());
+            orderClient.assemblyOrder(assemblyProductsForOrder.getOrderId());
         }
-        return calculateDelivery(assembledProducts);
+        return bookedProducts;
 
     }
 
@@ -159,17 +164,19 @@ public class WarehouseServiceImpl implements WarehouseService {
         Long quantity = updatingItem.get().getQuantity() + addProductToWarehouse.getQuantity();
         int result = warehouseItemRepository.updateWarehouseItemQuantity(addProductToWarehouse.getProductId(), quantity);
         if (result > 0) {
-            log.debug("Принято {} единиц товара: {}. ", addProductToWarehouse.getQuantity(), addProductToWarehouse.getProductId());
+            logger.debug("Принято {} единиц товара: {}. ", addProductToWarehouse.getQuantity(), addProductToWarehouse.getProductId());
         }
     }
 
     @Override
     public AddressDto getWarehouseAddress() {
-        //заглушка
-        Optional<Warehouse> foundedWarehouse = warehouseRepository.findById("1");
-        if (foundedWarehouse.isEmpty()) {
-            throw new RuntimeException("Склада с указанным id не существует");
-        }
+        //вызов с заглушкой адреса
+        logger.debug("Вызов метода создания склада по новому случайному адресу из заглушки.");
+        AddressDto randomWarehouse = addWarehouse(initAddressDto());
+        checkAddress(randomWarehouse);
+        Optional<Warehouse> foundedWarehouse = warehouseRepository.findByCityAndStreetAndHouseAndCountryAndFlat(
+                randomWarehouse.getCity(), randomWarehouse.getStreet(), randomWarehouse.getHouse(),
+                randomWarehouse.getCountry(), randomWarehouse.getFlat());
         return AddressDto.builder()
                 .city(foundedWarehouse.get().getCity())
                 .street(foundedWarehouse.get().getStreet())
@@ -179,11 +186,24 @@ public class WarehouseServiceImpl implements WarehouseService {
                 .build();
     }
 
+    @Override
+    public AddressDto addWarehouse(AddressDto newAddress) {
+        checkAddress(newAddress);
+        Warehouse newWarehouse = new Warehouse();
+        newWarehouse.setCity(newAddress.getCity());
+        newWarehouse.setStreet(newAddress.getStreet());
+        newWarehouse.setHouse(newAddress.getHouse());
+        newWarehouse.setCountry(newAddress.getCountry());
+        newWarehouse.setFlat(newAddress.getFlat());
+        warehouseRepository.save(newWarehouse);
+        return newAddress;
+    }
+
 
     private BookedProductsDto calculateDelivery(Map<WarehouseItem, Integer> productsInWarehouse) {
         Double commonWeight = 0.0;
         Double commonVolume = 0.0;
-        log.debug("Старт вычисления параметров доставки товаров");
+        logger.debug("Старт вычисления параметров доставки товаров");
         for (WarehouseItem item : productsInWarehouse.keySet()) {
             commonWeight += item.getWeight() * productsInWarehouse.get(item);
             Double currentVolume = item.getDepth() * item.getHeight() * item.getWidth() * productsInWarehouse.get(item);
@@ -202,22 +222,22 @@ public class WarehouseServiceImpl implements WarehouseService {
         return productsInWarehouse.stream().anyMatch(WarehouseItem::getFragile);
     }
 
-    //переделается в публичный вызываемый извне метод сервиса для создания склада
-    private Warehouse addNewWarehouse(AddressDto address) {
-        Warehouse newWarehouse = new Warehouse();
-        newWarehouse.setId("1");
-        newWarehouse.setCity(address.getCity());
-        newWarehouse.setStreet(address.getStreet());
-        newWarehouse.setHouse(address.getHouse());
-        newWarehouse.setCountry(address.getCountry());
-        newWarehouse.setFlat(address.getFlat());
-        warehouseRepository.save(newWarehouse);
-        return warehouse;
+    private void checkAddress(AddressDto address) {
+        if (address == null || address.getCity() == null || address.getStreet() == null || address.getHouse() == null
+                || address.getCountry() == null || address.getFlat() == null) {
+            throw new ValidationException("Переда некорректный адрес для нового склада.");
+        }
+        Optional<Warehouse> warehouse = warehouseRepository.findByCityAndStreetAndHouseAndCountryAndFlat(address.getCity(),
+                address.getStreet(), address.getHouse(), address.getCountry(), address.getFlat());
+        if (warehouse.isPresent()) {
+            throw new ValidationException("Склад, расположенный по данному адресу, уже зарегистрирован в системе");
+        }
     }
 
-    //заглушка
+
+    //заглушка адреса - создание рандомного адреса для склада
     private AddressDto initAddressDto() {
-        final String[] addresses = new String[]{"ADDRESS_1", "ADDRESS_2"};
+        final String[] addresses = new String[]{ADDRESS_1, ADDRESS_2};
         final String address = addresses[Random.from(new SecureRandom()).nextInt(0, 1)];
         return AddressDto.builder()
                 .city(address)

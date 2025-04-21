@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.dto.AddressDto;
 import ru.yandex.practicum.dto.BookedProductsDto;
+import ru.yandex.practicum.dto.DeliveryDto;
 import ru.yandex.practicum.dto.ShoppingCartDto;
 import ru.yandex.practicum.dto.request.AddProductToWarehouseRequest;
 import ru.yandex.practicum.dto.request.AssemblyProductsForOrderRequest;
@@ -41,7 +42,7 @@ public class WarehouseController {
      * @param shippedToDelivery запрос на передачу товаров в доставку
      */
     @PostMapping("/shipped")
-    ResponseEntity<Boolean> shippedProductsToDelivery(@RequestBody(required = true) ShippedToDeliveryRequest shippedToDelivery) {
+    ResponseEntity<DeliveryDto> shippedProductsToDelivery(@RequestBody(required = true) ShippedToDeliveryRequest shippedToDelivery) {
         return ResponseEntity.ok(warehouseService.shippedProductsToDelivery(shippedToDelivery));
     }
 
@@ -101,6 +102,17 @@ public class WarehouseController {
     @GetMapping("/address")
     public ResponseEntity<AddressDto> getWarehouseAddress() {
         return ResponseEntity.ok(warehouseService.getWarehouseAddress());
+    }
+
+    /**
+     * Добавить новый склад в систему.
+     *
+     * @param addressDto адрес нового склада
+     * @return новый адрес склада
+     */
+    @PostMapping("/address")
+    public ResponseEntity<AddressDto> addWarehouseAddress(AddressDto addressDto) {
+        return ResponseEntity.ok(warehouseService.addWarehouse(addressDto));
     }
 
 }

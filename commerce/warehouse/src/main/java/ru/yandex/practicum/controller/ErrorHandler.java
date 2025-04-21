@@ -6,6 +6,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.yandex.practicum.exception.*;
 
+import javax.validation.ValidationException;
+
 
 @RestControllerAdvice
 public class ErrorHandler {
@@ -19,7 +21,8 @@ public class ErrorHandler {
     @ExceptionHandler({
             SpecifiedProductAlreadyInWarehouseException.class,
             ProductInShoppingCartLowQuantityInWarehouse.class,
-            NoSpecifiedProductInWarehouseException.class
+            NoSpecifiedProductInWarehouseException.class,
+            ValidationException.class
     })
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleBadRequestException(final RuntimeException e) {

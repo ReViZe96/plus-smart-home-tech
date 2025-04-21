@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.UUID;
+
 @Entity
 @Table(name = "payments")
 @Getter
@@ -13,8 +15,9 @@ import lombok.Setter;
 public class Payment {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id")
-    private String paymentId;
+    private UUID paymentId;
     @Column(name = "total_cost")
     private Double totalPayment;
     @Column(name = "product_cost")

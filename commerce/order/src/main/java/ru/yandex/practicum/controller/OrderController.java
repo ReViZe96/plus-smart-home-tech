@@ -151,4 +151,26 @@ public class OrderController {
         return ResponseEntity.ok(orderService.calculateOrderDeliveryCost(orderId));
     }
 
+    /**
+     * Получение сведений о заказе по идентификатору платежа за данный заказ.
+     *
+     * @param paymentId идентификатор платежа за заказ в БД.
+     * @return Актуальный заказ со всеми сведениями из БД
+     */
+    @GetMapping("/byPaymentId/{paymentId}")
+    public ResponseEntity<OrderDto> getOrderByPaymentId(@PathVariable(name = "paymentId") String paymentId) {
+        return ResponseEntity.ok(orderService.getByPaymentId(paymentId));
+    }
+
+    /**
+     * Получение сведений о заказе по идентификатору.
+     *
+     * @param id идентификатор заказа в БД.
+     * @return Актуальный заказ со всеми сведениями из БД
+     */
+    @GetMapping("/byId/{id}")
+    public ResponseEntity<OrderDto> getOrderById(@PathVariable(name = "id") String id) {
+        return ResponseEntity.ok(orderService.getById(id));
+    }
+
 }

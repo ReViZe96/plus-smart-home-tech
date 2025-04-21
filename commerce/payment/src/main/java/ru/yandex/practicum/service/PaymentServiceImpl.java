@@ -1,50 +1,131 @@
 package ru.yandex.practicum.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.clients.OrderClient;
+import ru.yandex.practicum.clients.ShoppingStoreClient;
 import ru.yandex.practicum.dto.OrderDto;
 import ru.yandex.practicum.dto.PaymentDto;
+import ru.yandex.practicum.exception.NoOrderFoundException;
+import ru.yandex.practicum.exception.NotEnoughInfoInOrderToCalculateException;
 import ru.yandex.practicum.mapper.PaymentMapper;
+import ru.yandex.practicum.model.Payment;
+import ru.yandex.practicum.model.PaymentStatus;
 import ru.yandex.practicum.repository.PaymentRepository;
 
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+
 @Component
+@Slf4j
 @RequiredArgsConstructor
 public class PaymentServiceImpl implements PaymentService {
 
+    private static Logger logger = LoggerFactory.getLogger(PaymentServiceImpl.class);
+
     private final PaymentRepository paymentRepository;
     private final PaymentMapper paymentMapper;
+    private final OrderClient orderClient;
+    private final ShoppingStoreClient storeClient;
 
 
-    //если недостаточно информации в заказе для расчёта (400) - NotEnoughInfoInOrderToCalculateException
     @Override
     public PaymentDto createNewPayment(OrderDto addedOrder) {
-        return PaymentDto.builder().build();
+        Double productCost = addedOrder.getProductPrice();
+        Double deliveryCost = addedOrder.getDeliveryPrice();
+        Double totalCost = addedOrder.getTotalPrice();
+        if (productCost == null || deliveryCost == null || totalCost == null) {
+            throw new NotEnoughInfoInOrderToCalculateException("В заказе " + addedOrder.getOrderId() +
+                    " недостаточно информации для расчёта и сохранения платежа");
+        }
+        logger.debug("Старт создания платежа по заказу {}", addedOrder.getOrderId());
+        Payment newPayment = new Payment();
+        newPayment.setProductTotal(productCost);
+        newPayment.setDeliveryTotal(deliveryCost);
+        newPayment.setTotalPayment(totalCost);
+        newPayment.setStatus(PaymentStatus.PENDING);
+        newPayment.setFeeTotal(calculateOrderFee(productCost));
+        return paymentMapper.paymentToPaymentDto(paymentRepository.save(newPayment));
     }
 
-    //если недостаточно информации в заказе для расчёта (400) - NotEnoughInfoInOrderToCalculateException
     @Override
     public Double calculateProductsCostInOrder(OrderDto order) {
-        return 0.0;
+        Map<String, Integer> products = order.getProducts();
+        if (products == null || products.isEmpty()) {
+            throw new NotEnoughInfoInOrderToCalculateException("В заказе " + order.getOrderId() +
+                    " недостаточно информации для расчёта общей стоимости товаров");
+        }
+        double productsCost = 0.0;
+        for (String productId : products.keySet()) {
+            logger.debug("Запрос информации о товаре {} - вызов внешнего сервиса", productId);
+            productsCost += storeClient.getProductById(productId).getPrice() * products.get(productId);
+        }
+        logger.debug("Общая стоимость товаров в заказе {} расчитана и равна {}", order.getOrderId(), productsCost);
+        return productsCost;
     }
 
-    //если недостаточно информации в заказе для расчёта (400) - NotEnoughInfoInOrderToCalculateException
     @Override
     public Double calculateOrderTotalCost(OrderDto order) {
-        return 0.0;
+        Double productCost = order.getProductPrice();
+        Double deliveryCost = order.getDeliveryPrice();
+        Double fee;
+        if (productCost == null || deliveryCost == null) {
+            throw new NotEnoughInfoInOrderToCalculateException("В заказе " + order.getOrderId() +
+                    " недостаточно информации для расчёта его стоимости");
+        }
+        fee = calculateOrderFee(productCost);
+        logger.debug("Старт расчёта полной стоимости заказа {}", order.getOrderId());
+        return productCost + fee + deliveryCost;
     }
 
-    //возвращаемый тип может быть boolean или void
-    //если не найден заказ (404) - NoOrderFoundException
     @Override
     public PaymentDto makePaymentSuccess(String paymentId) {
-        return PaymentDto.builder().build();
+        Payment successPayment = checkPayment(UUID.fromString(paymentId));
+        PaymentDto successPaymentDto = setPaymentStatusAndSave(successPayment, PaymentStatus.SUCCESS);
+        logger.debug("Статус платёжа {} изменён на 'Успешно'", paymentId);
+        setPaymentInfoInOrder(successPayment);
+        return successPaymentDto;
     }
 
-    //возвращаемый тип может быть boolean или void
-    //если не найден заказ (404) - NoOrderFoundException
     @Override
     public PaymentDto makePaymentFailed(String paymentId) {
-        return PaymentDto.builder().build();
+        Payment failedPayment = checkPayment(UUID.fromString(paymentId));
+        PaymentDto failedPaymentDto = setPaymentStatusAndSave(failedPayment, PaymentStatus.FAILED);
+        logger.debug("Статус платёжа {} изменён на 'Неудачно'", paymentId);
+        setPaymentInfoInOrder(failedPayment);
+        return failedPaymentDto;
+    }
+
+
+    private Double calculateOrderFee(Double productCost) {
+        return productCost * 0.1;
+    }
+
+    private Payment checkPayment(UUID paymentId) {
+        Optional<Payment> payment = paymentRepository.findById(paymentId);
+        if (payment.isEmpty()) {
+            throw new NoOrderFoundException("Платёж с id = " + paymentId + " не найден в системе");
+        }
+        return paymentRepository.findById(paymentId).get();
+    }
+
+    private PaymentDto setPaymentStatusAndSave(Payment payment, PaymentStatus status) {
+        payment.setStatus(status);
+        return paymentMapper.paymentToPaymentDto(paymentRepository.save(payment));
+    }
+
+    private void setPaymentInfoInOrder(Payment payment) {
+        OrderDto order = orderClient.getOrderByPaymentId(payment.getPaymentId().toString());
+        if (order == null) {
+            throw new NoOrderFoundException("Заказ, связанный с платежом " + payment.getPaymentId() + " не найден в системе");
+        }
+        logger.debug("Старт изменения статуса заказа {}, связанного  с платежом {} - вызов внешнего сервиса",
+                order.getOrderId(), payment.getPaymentId());
+        orderClient.payOrder(order.getOrderId());
     }
 
 }

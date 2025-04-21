@@ -19,5 +19,11 @@ public class DeliveryDto {
     private String orderId;
     @NotNull
     private String deliveryState;
+    @NotNull
+    private Double volume;
+    @NotNull
+    private Double weigh;
+    @NotNull
+    private Boolean fragile;
 
 }

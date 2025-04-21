@@ -122,4 +122,22 @@ public interface OrderClient {
     @PostMapping("/api/v1/order/calculate/delivery")
     OrderDto calculateOrderDeliveryCost(@RequestBody(required = true) String orderId);
 
+    /**
+     * Получение сведений о заказе по идентификатору платежа за данный заказ.
+     *
+     * @param paymentId идентификатор платежа за заказ в БД.
+     * @return Актуальный заказ со всеми сведениями из БД
+     */
+    @GetMapping("/api/v1/order/byPaymentId/{paymentId}")
+    OrderDto getOrderByPaymentId(@PathVariable(name = "paymentId") String paymentId);
+
+    /**
+     * Получение сведений о заказе по идентификатору.
+     *
+     * @param id идентификатор заказа в БД.
+     * @return Актуальный заказ со всеми сведениями из БД
+     */
+    @GetMapping("/api/v1/order/byId/{id}")
+    OrderDto getOrderById(@PathVariable(name = "id") String id);
+
 }

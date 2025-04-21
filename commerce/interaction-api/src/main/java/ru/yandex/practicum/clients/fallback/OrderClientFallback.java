@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.PathVariable;
 import ru.yandex.practicum.clients.OrderClient;
 import ru.yandex.practicum.dto.OrderDto;
 import ru.yandex.practicum.dto.request.CreateNewOrderRequest;
@@ -95,6 +96,19 @@ public class OrderClientFallback implements OrderClient {
     @Override
     public OrderDto calculateOrderDeliveryCost(String orderId) {
         logger.warn(SERVICE_UNAVAILABLE + "невозможно расчитать стоимость доставки заказа {}", orderId);
+        return ORDER_STUB;
+    }
+
+    @Override
+    public OrderDto getOrderByPaymentId(String paymentId) {
+        logger.warn(SERVICE_UNAVAILABLE + "невозможно получить сведения о заказе по идентификатору платежа {}",
+                paymentId);
+        return ORDER_STUB;
+    }
+
+    @Override
+    public OrderDto getOrderById(@PathVariable(name = "id") String id) {
+        logger.warn(SERVICE_UNAVAILABLE + "невозможно получить сведения о заказе по его идентификатору {}.", id);
         return ORDER_STUB;
     }
 

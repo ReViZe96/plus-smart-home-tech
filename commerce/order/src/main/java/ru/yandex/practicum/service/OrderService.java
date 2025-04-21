@@ -33,4 +33,8 @@ public interface OrderService {
 
     OrderDto calculateOrderDeliveryCost(String orderId);
 
+    OrderDto getByPaymentId(String paymentId);
+
+    OrderDto getById(String id);
+
 }

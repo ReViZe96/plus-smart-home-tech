@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS payments (
-                      id varchar(100) PRIMARY KEY,
+                      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                       total_cost REAL,
                       product_cost REAL,
                       delivery_cost REAL,
