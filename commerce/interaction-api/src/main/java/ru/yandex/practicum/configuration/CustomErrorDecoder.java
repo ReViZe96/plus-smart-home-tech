@@ -25,11 +25,17 @@ public class CustomErrorDecoder implements ErrorDecoder {
         return defaultDecoder.decode(methodKey, response);
     }
 
-//    --------------------------Other Custom Exceptions:----------------------------------
+//    --------------------------Other Custom Exceptions:----------------------------------------------------------------
 //    ----- shopping-cart:
 //    - 400 ---> NoProductsInShoppingCartException("Products in cart not found. For method: " + methodKey);
 //    ----- warehouse:
 //    - 400 ---> SpecifiedProductAlreadyInWarehouseException("Product already in warehouse. For method: " + methodKey);
 //    - 400 ---> NoSpecifiedProductInWarehouseException("Product not exist in warehouse yet. For method: " + methodKey);
+//    ----- delivery:
+//    - 404 ---> NoDeliveryFoundException("Delivery is not found. For method: " + methodKey);
+//    ----- order:
+//    - 400 ---> NoOrderFoundException("Order is not found. For method: " + methodKey);
+//    ----- payment:
+//    - 400 ---> NotEnoughInfoInOrderToCalculateException("Information in order is not enough to calculate payment. For method: " + methodKey);
 
 }

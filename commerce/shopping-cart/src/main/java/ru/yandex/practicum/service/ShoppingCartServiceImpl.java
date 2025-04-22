@@ -2,8 +2,6 @@ package ru.yandex.practicum.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.clients.ShoppingStoreClient;
@@ -24,8 +22,6 @@ import java.util.Optional;
 @Slf4j
 @RequiredArgsConstructor
 public class ShoppingCartServiceImpl implements ShoppingCartService {
-
-    private static Logger logger = LoggerFactory.getLogger(ShoppingCartServiceImpl.class);
 
     private final CartRepository cartRepository;
     private final CartMapper cartMapper;

@@ -3,7 +3,7 @@ services:
     image: postgres:16.1
     container_name: warehouse-postgres
     ports:
-      - "5440:5440"
+      - "5434:5434"
     volumes:
       - ./postgresql.conf:/etc/postgresql/postgresql.conf
       - ./volumes/postgres:/var/lib/postgresql/data/
@@ -28,7 +28,7 @@ services:
       - -c
       - |
         set -e
-        psql postgresql://warehouse_user:12345@db-warehouse:5440/warehousedb -v ON_ERROR_STOP=1 <<-EOSQL
+        psql postgresql://warehouse_user:12345@db-warehouse:5434/warehousedb -v ON_ERROR_STOP=1 <<-EOSQL
           CREATE TABLE IF NOT EXISTS items (
                       id varchar(100) PRIMARY KEY,
                       quantity_in_warehouse bigint,
@@ -40,11 +40,16 @@ services:
           );
         
           CREATE TABLE IF NOT EXISTS warehouses (
-                      id varchar(100) PRIMARY KEY,
+                      id serial PRIMARY KEY,
                       address_city VARCHAR(64),
                       address_street VARCHAR(128),
-                      address_house VARCHAR(4),
+                      address_house VARCHAR(32),
                       address_country VARCHAR(32),
-                      address_flat VARCHAR(4)
+                      address_flat VARCHAR(32)
           );
+          INSERT INTO warehouses (id, address_city, address_street, address_house, address_country, address_flat)
+                      VALUES (1, 'ADDRESS_1', 'ADDRESS_1', 'ADDRESS_1', 'ADDRESS_1', 'ADDRESS_1');
+  
+          INSERT INTO warehouses (id, address_city, address_street, address_house, address_country, address_flat)
+                      VALUES (2, 'ADDRESS_2', 'ADDRESS_2', 'ADDRESS_2', 'ADDRESS_2', 'ADDRESS_2');
         EOSQL

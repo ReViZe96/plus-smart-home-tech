@@ -1,0 +1,40 @@
+services:
+  db-payment:
+    image: postgres:16.1
+    container_name: payment-postgres
+    ports:
+      - "5437:5437"
+    volumes:
+      - ./postgresql.conf:/etc/postgresql/postgresql.conf
+      - ./volumes/postgres:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=paymentdb
+      - POSTGRES_USER=payment_user
+      - POSTGRES_PASSWORD=12345
+    healthcheck:
+      test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
+      timeout: 5s
+      interval: 5s
+      retries: 10
+
+  db-init-payment:
+    image: postgres:16.1
+    container_name: db-init-payment
+    depends_on:
+      db-payment:
+        condition: service_healthy
+    entrypoint:
+      - bash
+      - -c
+      - |
+        set -e
+        psql postgresql://payment_user:12345@db-payment:5437/paymentdb -v ON_ERROR_STOP=1 <<-EOSQL
+          CREATE TABLE IF NOT EXISTS payments (
+                      id serial PRIMARY KEY,
+                      total_cost real,
+                      product_cost real,
+                      delivery_cost real,
+                      state varchar(32),
+                      fee_cost real
+          );
+        EOSQL

@@ -1,12 +1,11 @@
 package ru.yandex.practicum.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.UUID;
 
 @Entity
 @Table(name = "warehouses")
@@ -17,16 +16,17 @@ public class Warehouse {
 
     @Id
     @Column(name = "id")
-    private String id;
-    @Column(name = "address_city")
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
+    @Column(name = "address_city", nullable = false)
     private String city;
-    @Column(name = "address_street")
+    @Column(name = "address_street", nullable = false)
     private String street;
-    @Column(name = "address_house")
+    @Column(name = "address_house", nullable = false)
     private String house;
-    @Column(name = "address_country")
+    @Column(name = "address_country", nullable = false)
     private String country;
-    @Column(name = "address_flat")
+    @Column(name = "address_flat", nullable = false)
     private String flat;
 
 }
